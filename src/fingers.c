@@ -7,19 +7,7 @@
 
 const char *name = "fingers";
 
-#define LVL0_BLOCK " "
-#define LVL1_BLOCK "▁"
-#define LVL2_BLOCK "▂"
-#define LVL3_BLOCK "▃"
-#define LVL4_BLOCK "▄"
-#define LVL5_BLOCK "▅"
-#define LVL6_BLOCK "▆"
-#define LVL7_BLOCK "▇"
-#define LVL8_BLOCK "█"
-
-#define BLOCK_LEVELS 8
-
-WINDOW *fingersWin;
+WINDOW *win;
 const int win_w = 53;
 const int win_h = 12;
 
@@ -28,8 +16,9 @@ int win_x, win_y; // absolute position of program window
 const int test_time = 60; // will be read from config file later
 // int duration_mins, duration_secs;
 
-int *speedHistory;
-int currSec = 0; // which second we are in
+int *wps;
+
+
 
 // char* upper(const char *str){
 //       char *res;
@@ -43,19 +32,25 @@ void start(int duration){
       win_x = (COLS - win_w) / 2;
 
       // draw box
-      fingersWin = newwin(win_h, win_w, win_y, win_x);
-      box(fingersWin, 0, 0);
+      win = newwin(win_h, win_w, win_y, win_x);
+      box(win, 0, 0);
 
       // write application name as header
-      mvwhline(fingersWin, 0, 2, ' ', strlen(name) + 2);
-      wmove(fingersWin, 0, 3); // move cursor
+      mvwhline(win, 0, 2, ' ', strlen(name) + 2);
+      wmove(win, 0, 3); // move cursor
       size_t nameLen = strlen(name);
       for(int i = 0; i < nameLen; i++){
-         waddch(fingersWin, toupper((unsigned char) name[i]));}
+         waddch(win, toupper((unsigned char) name[i]));}
 
-      wrefresh(fingersWin);
+      wrefresh(win);
 
-      printTypingScr();
+      int currSec = 0; // which second we are in
+
+      int wpm = 0;
+      int max_wps = 0;
+
+      // printTypingScr();
+      printResult(wpm, max_wps);
       
 
 // while(true){

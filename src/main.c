@@ -6,6 +6,9 @@
 #include <unistd.h>
 
 extern const char *name; // fingers
+                         
+// TODO
+// fingers'taki gereksiz constant'ları temizle
 
 int main(int argc, char **argv){
       int time_limit = 60;
