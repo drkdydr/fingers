@@ -2,6 +2,7 @@
 #include <math.h>
 #include <curses.h>
 #include <string.h>
+#include <unistd.h>
 
 extern WINDOW *win;
 extern const int win_w;
@@ -25,18 +26,32 @@ extern int currSec; // which second we are in
 #define IND_Y 9
 #define IND_CH '>'
 
-// result blocks
-#define LVL0_BLOCK " "
-#define LVL1_BLOCK "▁"
-#define LVL2_BLOCK "▂"
-#define LVL3_BLOCK "▃"
-#define LVL4_BLOCK "▄"
-#define LVL5_BLOCK "▅"
-#define LVL6_BLOCK "▆"
-#define LVL7_BLOCK "▇"
-#define LVL8_BLOCK "█"
+extern FILE *d;
 
-#define BLOCK_LEVELS 8
+// result blocks
+const int blocks_size = 9;
+// const char* blocks[] = {
+//       " ",
+//       "▁",
+//       "▂",
+//       "▃",
+//       "▄",
+//       "▅",
+//       "▆",
+//       "▇",
+//       "█"
+// };
+const char* blocks[] = {
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8"
+};
 
 #define HIST_W 40
 
@@ -60,8 +75,8 @@ int roundUppperTen(int val){
       return val;
 }
 
-extern int *wps;
-extern int max_wps;
+int *graph_wps;
+int graph_w = 40;
 
 // print result screen
 void printResult(int wpm, int max_wps){
@@ -69,28 +84,46 @@ void printResult(int wpm, int max_wps){
       mvwprintw(win, 1, (win_w - strlen(header)) / 2, "%s", header);
 
       // calculate intervals
-      int halfblock_wps; // wpm equivalent of '-'
-      if (max_wps <= 45)
-            halfblock_wps = 5;
+      double block_wps; // wpm equivalent of '-'
+      if (max_wps <= 60)
+            block_wps = 60.0 / 4.5;
       else
-           halfblock_wps = ceil((double)max_wps / 9.0);
-      //     
+           block_wps = ceil((double)max_wps / 4.5);
+          
       // write left side numbers
       for (int i = 0; i < 3; i++) {
-            mvwprintw(win, 5 + (2*i), 3, "%*d -", 3, (9 - 4*i) * halfblock_wps);
+            mvwprintw(win, 5 + (2*i), 3, "%*d -", 3, (int)((9 - 4*i) * block_wps / 2));
       }
 
       // bottom line (seconds indicator) 
       mvwaddch(win, 10, 8, '0');
-      mvwprintw(win, 10, 28, "%2d", test_time / 2);
-      mvwprintw(win, 10, 48, "%2d", test_time);
+      mvwprintw(win, 10, 8 + graph_w / 2, "%2d", test_time / 2);
+      mvwprintw(win, 10, 8 + graph_w, "%2d", test_time);
       
       // write wpm
       mvwprintw(win, 3, 3, "WPM: %d", wpm);
 
       // write graph
-      for(int i = 0; i < 40; i++){
-            continue;
+      for(int i = 0; i < graph_w; i++){
+            int curr = graph_wps[i];
+            fprintf(d, "actual value = %d\n", curr);
+            int blockVal = ( ( curr / block_wps ) * ( blocks_size - 1 ) ); // value in blocks
+            fprintf(d, "block equivalent %d ",blockVal);
+            int l = 0;
+            while (blockVal > 0){
+                  if(blockVal >= blocks_size - 1){
+                        fprintf(d, "->> %d ",blocks_size -1);
+                        mvwprintw(win, 9 - l, 9 + i, "%s", blocks[blocks_size - 1]);
+                        blockVal -= blocks_size - 1;
+                  }else{
+                        fprintf(d, "->> %d ",blockVal);
+                        mvwprintw(win, 9 - l, 9 + i, "%s", blocks[blockVal]);
+                        break;
+                  }
+                  l++;
+                  wrefresh(win);
+            }
+            fprintf(d, "\n");
       }
 
       // restart info

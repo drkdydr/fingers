@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "fingers.h"
 #include <unistd.h>
+#include <time.h>
 
 extern const char *name; // fingers
                          
@@ -11,6 +12,9 @@ extern const char *name; // fingers
 // fingers'taki gereksiz constant'ları temizle
 
 int main(int argc, char **argv){
+
+      srand(time(0)); // for randomness
+
       int time_limit = 60;
 
       // flags for configuration
@@ -34,7 +38,7 @@ int main(int argc, char **argv){
       curs_set(0); // makes cursor invisible
 
       start(time_limit);
-      sleep(10000000);
+      sleep(5);
 
       endwin();
 }
