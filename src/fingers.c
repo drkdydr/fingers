@@ -82,6 +82,8 @@ void start(int duration){
       int key_stroke = 0;
       int accuracy = 0;
 
+      readWordFile("/home/dydr/projects/fingers/words/en_US.csv"); // fopen çalıştırdığın konuma göre path'i alır
+
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));
       if (!graph_w){

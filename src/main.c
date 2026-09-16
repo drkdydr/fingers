@@ -30,9 +30,6 @@ int main(int argc, char **argv){
       if (time_lim_str)
             time_limit = atoi(time_lim_str);
 
-      readWordFile("/home/dydr/projects/fingers/words/en_US.csv"); // fopen çalıştırdığın konuma göre path'i alır
-      return 0;
-
       // screen properties
       initscr();
 	cbreak();
