@@ -1,3 +1,4 @@
+#include <locale.h>
 #include <curses.h>
 #include <hoist.h>
 #include <stdio.h>
@@ -12,7 +13,7 @@ extern const char *name; // fingers
 // fingers'taki gereksiz constant'ları temizle
 
 int main(int argc, char **argv){
-
+      setlocale(LC_ALL, "");
       srand(time(0)); // for randomness
 
       int time_limit = 60;
@@ -29,6 +30,9 @@ int main(int argc, char **argv){
       if (time_lim_str)
             time_limit = atoi(time_lim_str);
 
+      readWordFile("/home/dydr/projects/fingers/words/en_US.csv"); // fopen çalıştırdığın konuma göre path'i alır
+      return 0;
+
       // screen properties
       initscr();
 	cbreak();
@@ -38,7 +42,7 @@ int main(int argc, char **argv){
       curs_set(0); // makes cursor invisible
 
       start(time_limit);
-      sleep(5);
+      sleep(11115);
 
       endwin();
 }

@@ -30,28 +30,29 @@ extern FILE *d;
 
 // result blocks
 const int blocks_size = 9;
-// const char* blocks[] = {
-//       " ",
-//       "▁",
-//       "▂",
-//       "▃",
-//       "▄",
-//       "▅",
-//       "▆",
-//       "▇",
-//       "█"
-// };
 const char* blocks[] = {
-      "0",
-      "1",
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8"
+      " ",
+      "▁",
+      "▂",
+      "▃",
+      "▄",
+      "▅",
+      "▆",
+      "▇",
+      "█"
 };
+
+// const char* blocks[] = {
+//       "0",
+//       "1",
+//       "2",
+//       "3",
+//       "4",
+//       "5",
+//       "6",
+//       "7",
+//       "8"
+// };
 
 #define HIST_W 40
 
@@ -79,7 +80,7 @@ int *graph_wps;
 int graph_w = 40;
 
 // print result screen
-void printResult(int wpm, int max_wps){
+void printResult(int wpm, int max_wps, int accuracy){
       const char *header = "-- RESULTS --";
       mvwprintw(win, 1, (win_w - strlen(header)) / 2, "%s", header);
 
@@ -101,7 +102,8 @@ void printResult(int wpm, int max_wps){
       mvwprintw(win, 10, 8 + graph_w, "%2d", test_time);
       
       // write wpm
-      mvwprintw(win, 3, 3, "WPM: %d", wpm);
+      mvwprintw(win, 2, 3, "WPM: %d", wpm);
+      mvwprintw(win, 3, 3, "Accuracy: %d%%", accuracy);
 
       // write graph
       for(int i = 0; i < graph_w; i++){
@@ -132,6 +134,3 @@ void printResult(int wpm, int max_wps){
 
       wrefresh(win);
 }
-
-// prints speed graph
-void printGraph();

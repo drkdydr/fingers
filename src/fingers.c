@@ -15,36 +15,42 @@ const int win_w = 53;
 const int win_h = 12;
 
 int win_x, win_y; // absolute position of program window
+                  
+// words
+char **words;
+int words_count;
+int words_capacity;
 
 const int test_time = 60; // will be read from config file later
 extern int *graph_wps;
 extern int graph_w;
-int wpm = 0;
-int max_wps = 0; // for graph generation
+// int wpm = 0;
+// int max_wps = 0; // for graph generation
 
 FILE *d; // debug log file
+FILE *lb; // leaderboard
 
 // debug tool to fill wps values randomly
-void fillRandom(int *arr, int arr_size){
+void fillRandom(int *arr, int arr_size, int* wpm, int* max_wps){
       // FILE *f = fopen("debug.log", "a");
       // fprintf(f, "graph_wps=%p, graph_w=%d\n", (void*)graph_wps, graph_w);
       // fclose(f);
 
       if (!arr) return;
       // printf("filling random...\n");
-      int lower = 0, upper = 100;
+      int lower = 0, upper = 200;
 
       double total = 0;
 
       for (int i = 0; i < arr_size; i++){
             int random_int = rand() % ( upper + 1 );
             // printf("random-int : %d", random_int);
-            if (max_wps < random_int) max_wps = random_int;
+            if (*max_wps < random_int) *max_wps = random_int;
             arr[i] = random_int;
             total += random_int;
       }
       // printf("filled random\n");
-      wpm = ceil(total / (double)arr_size);
+      *wpm = ceil(total / (double)arr_size);
 }
 
 // test for debugging function
@@ -59,6 +65,10 @@ void printWPS(){
 void start(int duration){
 
       d = fopen("debug.log", "w");
+      // lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
+      
+      // // get high score
+      // int record_wpm = readRecordFile();
 
       // initializations:
       win_y = (LINES - win_h) / 2;
@@ -66,8 +76,11 @@ void start(int duration){
 
       int currSec = 0; // which second we are in
 
-      // int wpm = 0;
-      // int max_wps = 0;
+      int wpm = 0; 
+      int max_wps = 0; // for graph generation
+
+      int key_stroke = 0;
+      int accuracy = 0;
 
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));
@@ -75,7 +88,9 @@ void start(int duration){
             printf("error: allocation failed.\n");
             exit(1);
       }
-      fillRandom(graph_wps, graph_w);
+      
+      // auto input
+      fillRandom(graph_wps, graph_w, &wpm, &max_wps);
       // printWPS();
 
       // draw box
@@ -91,9 +106,18 @@ void start(int duration){
 
       wrefresh(win);
 
+      // TODO calculate accuracy
 
       // printTypingScr();
-      printResult(wpm, max_wps);
+      printResult(wpm, max_wps, accuracy);
+
+      // // TODO save if its is a record
+      // if (wpm > record_wpm){
+      //       saveRecord();
+      // }
+      
+      fclose(d); // close debug file
+      // fclose(lb); // close leaderboard file
       
 
 // while(true){

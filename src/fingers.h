@@ -12,7 +12,7 @@ void start(int duration); // no parameter after config file added.
       void printTypingScr(int curr_sec);
 
 // print result screen
-void printResult(int wpm, int max_wps);
+void printResult(int wpm, int max_wps, int accuracy);
       // // prints speed graph (no need over simplification)
       // void printGraph();
 
