@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 const char *name = "fingers";
+#define WORD_FILE_PATH "/home/dydr/projects/fingers/words/en_US.csv"
 
 WINDOW *win;
 const int win_w = 53;
@@ -26,6 +27,8 @@ extern int *graph_wps;
 extern int graph_w;
 // int wpm = 0;
 // int max_wps = 0; // for graph generation
+
+
 
 FILE *d; // debug log file
 FILE *lb; // leaderboard
@@ -62,7 +65,7 @@ void printWPS(){
       }
 }
 
-void start(int duration){
+void run(int duration){
 
       d = fopen("debug.log", "w");
       // lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
@@ -82,7 +85,8 @@ void start(int duration){
       int key_stroke = 0;
       int accuracy = 0;
 
-      readWordFile("/home/dydr/projects/fingers/words/en_US.csv"); // fopen çalıştırdığın konuma göre path'i alır
+      // read words from locale file
+      readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
 
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));
@@ -91,7 +95,7 @@ void start(int duration){
             exit(1);
       }
       
-      // auto input
+      // auto input (temporary)
       fillRandom(graph_wps, graph_w, &wpm, &max_wps);
       // printWPS();
 
@@ -108,10 +112,20 @@ void start(int duration){
 
       wrefresh(win);
 
-      // TODO calculate accuracy
+      // TODO calculate accuracy (correct characters / total typed characters) * 100
+      // wpm formula : (total characters typed / 5) / time (in minutes)
 
-      // printTypingScr();
-      printResult(wpm, max_wps, accuracy);
+      printTypingScr(currSec);
+      // printResult(wpm, max_wps, accuracy);
+      
+
+
+
+
+
+
+
+
 
       // // TODO save if its is a record
       // if (wpm > record_wpm){
@@ -120,14 +134,5 @@ void start(int duration){
       
       fclose(d); // close debug file
       // fclose(lb); // close leaderboard file
-      
-
-// while(true){
-//       speedHistory = (int*)calloc(duration, sizeof(int));
-//       if (!speedHistory){
-//             printf("error: memory cannot allocated.\n");
-//             exit(1);
-//       }
-// }
 }
 

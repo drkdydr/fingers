@@ -38,7 +38,7 @@ int main(int argc, char **argv){
 
       curs_set(0); // makes cursor invisible
 
-      start(time_limit);
+      run(time_limit);
       sleep(11115);
 
       endwin();
