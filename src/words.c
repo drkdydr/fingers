@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <wchar.h>
 #include "fingers.h"
 
-extern char **words;
+extern wchar_t **words;
 extern int words_count;
 extern int words_capacity;
 
 #define BUFFER_SIZE 100
 
-const char *wordFileName = "en_US.csv";
+// const char *wordFileName = "en_US.csv";
 
 // TODO revise wview and queue functions
 
@@ -29,15 +30,15 @@ const char *wordFileName = "en_US.csv";
 //       pair** typos;
 // } word_view;
 
-void init_wview(word_view *wv, char *w) {
+void init_wview(word_view *wv, wchar_t *w) {
       wv->cur_idx = 0;
       wv->word = w;
-      wv->wlen = strlen(w);
+      wv->len = wcslen(w); // returns size of wide string
       // initialize typos in heap
       // wv->trues = ;
 }
 
-void add_pair(word_view *wv, int idx, char c, bool isTrue){
+void add_pair(word_view *wv, int idx, wchar_t c, bool isTrue){
 }
 
 int add_input(word_view *wv, char w){ //enter basıldıysa true döndürecek (başka kelimeye geç manasında)
@@ -87,77 +88,15 @@ word_view* dequeue(TCQ *tcq){
       return res;
 }
 
-void enqueue(TCQ *tcq, char *val){
+void enqueue(TCQ *tcq, wchar_t *val){
       if (!tcq) init_tcQueue(tcq);
       if (isFull(tcq)) return;
       tcq->rear = ( tcq->rear + 1 ) % TCQ_CAP;
       if (tcq->front == -1) tcq->front++;
       word_view *wv;
       
-      tcq->words[tcq->rear] = val;
-}
-
-// ==== WORD FILE READ FUNCTIONS ====
-
-// add read word to memory
-void add_word(char *word){
-      // allocate memory if unallocated or insufficient
-      if (!words) {
-           words_capacity = 10;
-           words = malloc(words_capacity * sizeof(char*));
-      }
-      if (words_count >= words_capacity){
-           words_capacity *= 2;
-           words = realloc(words, words_capacity * sizeof(char*));
-      }
-      if (!words) {
-           printf("error: mem allocation failed.\n");
-           exit(1);
-      }
-
-      words[words_count++] = word;
-}
-
-// read words from word file
-void readWordFile(const char *filename){
-      FILE* fp = fopen(filename, "r");
-
-      char * line = NULL;
-      size_t len = 0;
-      ssize_t read;
-
-      fp = fopen(filename, "r");
-      if (!fp){
-            printf("error: cannot open file '%s'.\n", filename);
-            exit(1);
-      }
-
-      char buffer[BUFFER_SIZE];
-
-      while (fscanf(fp, "%99s", buffer) == 1){
-            char *word = strdup(buffer);  // string'in heap üzerinde kopyasını alır
-            if (!word) {
-                  printf("error: mem allocation failed.\n");
-                  exit(1);
-            }
-            add_word(word);
-      }
-
-      fclose(fp);
-      
-      // debug:
-      // for(int i = 0; i < words_count; i++){
-      //       printf("%s, ", words[i]);
-      // }
-      // printf("\n");
-
       return;
+      // to be completed
+      // tcq->words[tcq->rear] = val;
 }
-
-// meraklısına
-// char *my_strdup(const char *s) {
-//     char *copy = malloc(strlen(s) + 1);
-//     if (copy) strcpy(copy, s);
-//     return copy;
-// }
 

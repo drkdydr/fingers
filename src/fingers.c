@@ -7,9 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <wchar.h>
 
 const char *name = "fingers";
-#define WORD_FILE_PATH "/home/dydr/projects/fingers/words/en_US.csv"
+#define WORD_FILE_PATH "/home/dydr/projects/fingers/words/tr.csv"
 
 WINDOW *win;
 const int win_w = 53;
@@ -18,7 +19,7 @@ const int win_h = 12;
 int win_x, win_y; // absolute position of program window
                   
 // words
-char **words;
+wchar_t **words;
 int words_count;
 int words_capacity;
 
@@ -87,6 +88,8 @@ void run(int duration){
 
       // read words from locale file
       readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
+
+      return;
 
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));

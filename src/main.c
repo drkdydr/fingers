@@ -36,7 +36,7 @@ int main(int argc, char **argv){
 	keypad(stdscr, TRUE);
       refresh();
 
-      curs_set(0); // makes cursor invisible
+      // curs_set(0); // makes cursor invisible
 
       run(time_limit);
       sleep(11115);

@@ -2,24 +2,18 @@
 #define FINGERS_H
 
 #include <curses.h>
+#include <wchar.h>
 
 #define RESTART_KEY R
 
 typedef struct {
-      int idx;
-      char val;
-      bool isTrue;
-} pair;
-
-typedef struct {
-      char *word;
-      int wlen;
+      wchar_t *word;
+      int len;
       int cur_idx;
-      pair **trues;
-      pair **falses;
+      bool *inputs; // boolean array to hold each index is true or false typed
 } word_view;
 
-void init_wview(word_view *wv, char *w);
+void init_wview(word_view *wv, wchar_t *w);
 
 // circular queue for test words list
 #define TCQ_CAP 100
@@ -37,7 +31,7 @@ bool isFull(TCQ *tcq);
 
 word_view* dequeue(TCQ *tcq);
 
-void enqueue(TCQ *tcq, char *val);
+void enqueue(TCQ *tcq, wchar_t *val);
 
 
 void readWordFile(const char *filename);
