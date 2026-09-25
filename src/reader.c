@@ -10,7 +10,7 @@ extern int words_capacity;
 
 #define BUFFER_SIZE 100
 
-const char *wordFileName = "en_US.csv";
+const char *wordFileName = "tr.csv";
 
 // add read word to memory
 void add_word(wchar_t *word){
@@ -24,7 +24,7 @@ void add_word(wchar_t *word){
            words = realloc(words, words_capacity * sizeof(wchar_t*));
       }
       if (!words) {
-           printf("error: mem allocation failed.\n");
+           wprintf(L"error: mem allocation failed.\n");
            exit(1);
       }
 
@@ -39,7 +39,7 @@ void readWordFile(const char *filename){
 
       FILE* fp = fopen(filename, "r");
       if (!fp){
-            printf("error: cannot open file '%s'.\n", filename);
+            wprintf(L"error: cannot open file '%s'.\n", filename);
             exit(1);
       }
 
@@ -48,7 +48,7 @@ void readWordFile(const char *filename){
       while (fwscanf(fp, L"%99s", buffer) == 1){
             wchar_t *word = wcsdup(buffer);  // string'in heap üzerinde kopyasını alır
             if (!word) {
-                  printf("error: mem allocation failed.\n");
+                  wprintf(L"error: mem allocation failed.\n");
                   exit(1);
             }
             add_word(word);
@@ -56,11 +56,11 @@ void readWordFile(const char *filename){
 
       fclose(fp);
       
-      // debug:
-      for(int i = 0; i < words_count; i++){
-            wprintf(L"%s, ", words[i]);
-      }
-      wprintf(L"\n");
+      // // debug:
+      // for(int i = 0; i < words_count; i++){
+      //       wprintf(L"%s, ", words[i]);
+      // }
+      // wprintf(L"\n");
 
       return;
 }

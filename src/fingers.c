@@ -69,9 +69,9 @@ void printWPS(){
 void run(int duration){
 
       d = fopen("debug.log", "w");
-      // lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
       
       // // get high score
+      // lb = fopen("leaderboard.txt", "r"); 
       // int record_wpm = readRecordFile();
 
       // initializations:
@@ -89,12 +89,10 @@ void run(int duration){
       // read words from locale file
       readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
 
-      return;
-
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));
       if (!graph_w){
-            printf("error: allocation failed.\n");
+            wprintf(L"error: allocation failed.\n");
             exit(1);
       }
       
@@ -120,22 +118,14 @@ void run(int duration){
 
       printTypingScr(currSec);
       // printResult(wpm, max_wps, accuracy);
-      
-
-
-
-
-
-
-
-
 
       // // TODO save if its is a record
       // if (wpm > record_wpm){
+               // lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
       //       saveRecord();
+               // fclose(lb); // close leaderboard file
       // }
       
       fclose(d); // close debug file
-      // fclose(lb); // close leaderboard file
 }
 

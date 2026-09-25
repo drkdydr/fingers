@@ -68,6 +68,8 @@ void printTypingScr(int currSec){
       // indicator
       mvwaddch(win, IND_Y, IND_X, IND_CH);
 
+      wmove(win, IND_Y, IND_X + 2);
+
       wrefresh(win);
 }
 
