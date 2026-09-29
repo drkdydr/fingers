@@ -15,8 +15,6 @@ extern int words_capacity;
 
 // const char *wordFileName = "en_US.csv";
 
-// TODO revise wview and queue functions
-
 // typedef struct {
 //       wchar_t *word;
 //       int len;
@@ -26,38 +24,114 @@ extern int words_capacity;
 
 // typedef struct {
 //       word_view **words;
+//       int cur;
 //       int cap;
 //       int count;
 // } Line;
 
-void init_wview(word_view *wv, wchar_t *w) {
+Line *lines;
+int lines_count;
+int lines_cap;
+int curr_line = 0;
+
+// initialize first states of Line *lines;
+void init_lines(){
+      // initialize lines
+      lines_cap = 3;
+      lines = malloc(lines_cap * sizeof(Line));
+      if (!lines){
+            wprintf(L"error: lines could not initialized.\n");
+            exit(1);
+      }
+      lines_count = 0;
+      curr_line = 0;
+
+      // create starting lines
+      for (int i = 0; i < 3; i++) new_line(); // start with 3 lines
+}
+
+// initialize a word
+void init_wview(word_view *wv) {
+
       wv->cur_idx = 0;
-      wv->word = w;
-      wv->len = wcslen(w); // returns size of wide string
-      // initialize typos in heap
-      // wv->inputs = malloc(wv->len * sizeof(bool));
-      // if (!wv->inputs){
-      //       printf("error: memory allocation failed.\n");
-      //       exit(1);
-      // }
-}
 
-int add_input_line(int w){
+      wchar_t *word = words[rand() % words_count];
+      wv->word = word; // set random word
+      wv->len = wcslen(word); // returns size of wide string
 
 }
 
-int add_input_wc(word_view *wv, int w){ //enter basıldıysa true döndürecek (başka kelimeye geç manasında)
+// create brand new line
+Line* new_line(){
+      if (lines_count >= lines_cap) {
+            lines->cap *= 2;
+            lines = realloc(lines, lines_cap * sizeof(Line));
+            if (!lines){
+                  wprintf(L"error: memory allocation failed.\n");
+                  exit(1);
+            }
+      }
+      Line *line = lines + lines_count;
+      line->count = 0;
+      line->cap = 3;
+      line->cur = 0;
+      line->words = malloc(line->cap * sizeof(word_view));
 
-      if (w == KEY_ENTER || w == L' ') return 1;
+      // insert words
+      int written = 0;
+      while (written <=  WRITE_LINE_W){
 
-      if (w == KEY_BACKSPACE) {
-            if (wv->cur_idx > 0) wv->cur_idx--;
-         // return 0;
+            // if line's word array full, expand
+            if (line->count >= line->cap) {
+                  line->cap += 3;
+                  line->words = realloc(line->words, sizeof(Line[line->cap]));
+                  if (!line->words){
+                        wprintf(L"memory allocation failed.\n");
+                        exit(1);
+                  }
+            }
+
+            word_view *wv = &line->words[line->cur];
+            init_wview(wv);
+
+            written += wcslen(wv->word) + 1; // 1 for adjusting space
+            line->count++; // increase word count of line
       }
 
-      // write input to inputs
-      if (wv->cur_idx < 20) 
-            wv->inputs[wv->cur_idx++] = w;
+      lines_count++;
       return 0;
 }
+
+// look input and change state of words and lines
+int handle_input(int wch){
+      Line *cur_line = &lines[curr_line];
+      word_view *cur_word = &cur_line->words[cur_line->cur];
+
+}
+
+// int add_input_line(Line *l, int w){ // return 1 if that line is completed
+//       // make add_input_wc with current word
+//       // according output edit lines words etc.
+
+//       if (add_input_wc(l->words[l->cur], w)) l->cur++;
+
+//       if (l->cur >= l->count) return 1;
+
+//       return 0;
+// }
+
+// int add_input_wc(word_view *wv, int w){ //enter basıldıysa true döndürecek (başka kelimeye geç manasında)
+
+//       if (w == KEY_ENTER || w == L' ') return 1;
+
+//       if (w == KEY_BACKSPACE) {
+//             if (wv->cur_idx > 0) wv->cur_idx--;
+//          // return 0;
+//       }
+
+//       // write input to inputs
+//       if (wv->cur_idx < 20) 
+//             wv->inputs[wv->cur_idx++] = w;
+//       return 0;
+// }
 

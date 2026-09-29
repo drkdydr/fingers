@@ -10,21 +10,27 @@ typedef struct {
       wchar_t inputs[INPUT_BUF_SIZE]; // holds input characters
 } word_view;
 
-void init_wview(word_view *wv, wchar_t *w);
+void init_wview(word_view *wv);
 
 typedef struct {
-      word_view **words;
+      word_view *words;
+      int cur; // current word's index
       int cap;
       int count;
 } Line;
 
-// Line currentLines[2];
-// Line *written;
+// Line *lines;
+// int lines_count;
+// int lines_cap;
+// int curr_line = 0;
 
+// initialize first states of Line *lines;
+void init_lines();
+
+// create brand new line
 Line* new_line();
 
-int add_input_line(int w);
-
-int add_input_wc(word_view *wv, int w); //enter basıldıysa true döndürecek (başka kelimeye geç manasında)
+// look input and change state of words and lines
+int handle_input(int wch);
 
 #endif
