@@ -31,6 +31,6 @@ void init_lines();
 Line* new_line();
 
 // look input and change state of words and lines
-int handle_input(int wch);
+void handle_input(int wch);
 
 #endif

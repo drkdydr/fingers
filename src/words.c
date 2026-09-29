@@ -103,35 +103,21 @@ Line* new_line(){
 }
 
 // look input and change state of words and lines
-int handle_input(int wch){
+void handle_input(int wch){
       Line *cur_line = &lines[curr_line];
       word_view *cur_word = &cur_line->words[cur_line->cur];
 
+      if (wch == KEY_ENTER || wch == L' '){ // if pressed ENTER or SPACE go next word
+            if (cur_line->cur >= cur_line->count - 1){ // if last word of line
+                  curr_line++;
+                  return;
+            }
+            cur_line->cur++;
+      }else if (wch == KEY_BACKSPACE){ // if pressed BACKSPACE go one char
+            if (cur_word->cur_idx > 0) cur_word->cur_idx--;
+      }else{ // save input to word's inputs
+            if (cur_word->cur_idx >= INPUT_BUF_SIZE) return; // if buffer is full, ignore
+            cur_word->inputs[++cur_word->cur_idx] = wch;
+      }
+
 }
-
-// int add_input_line(Line *l, int w){ // return 1 if that line is completed
-//       // make add_input_wc with current word
-//       // according output edit lines words etc.
-
-//       if (add_input_wc(l->words[l->cur], w)) l->cur++;
-
-//       if (l->cur >= l->count) return 1;
-
-//       return 0;
-// }
-
-// int add_input_wc(word_view *wv, int w){ //enter basıldıysa true döndürecek (başka kelimeye geç manasında)
-
-//       if (w == KEY_ENTER || w == L' ') return 1;
-
-//       if (w == KEY_BACKSPACE) {
-//             if (wv->cur_idx > 0) wv->cur_idx--;
-//          // return 0;
-//       }
-
-//       // write input to inputs
-//       if (wv->cur_idx < 20) 
-//             wv->inputs[wv->cur_idx++] = w;
-//       return 0;
-// }
-
