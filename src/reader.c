@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <wchar.h>
 #include "fingers.h"
 
@@ -45,7 +44,7 @@ void readWordFile(const char *filename){
 
       wchar_t buffer[BUFFER_SIZE];
 
-      while (fwscanf(fp, L"%99s", buffer) == 1){
+      while (fwscanf(fp, L"%99ls", buffer) == 1){
             wchar_t *word = wcsdup(buffer);  // string'in heap üzerinde kopyasını alır
             if (!word) {
                   wprintf(L"error: mem allocation failed.\n");

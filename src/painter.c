@@ -1,5 +1,9 @@
 #include "fingers.h"
+#include "words.h"
 #include <math.h>
+#ifndef _XOPEN_SOURCE_EXTENDED
+#define _XOPEN_SOURCE_EXTENDED
+#endif
 #include <curses.h>
 #include <string.h>
 #include <unistd.h>
@@ -30,17 +34,20 @@ extern FILE *d;
 
 // result blocks
 const int blocks_size = 9;
-const char* blocks[] = {
-      " ",
-      "▁",
-      "▂",
-      "▃",
-      "▄",
-      "▅",
-      "▆",
-      "▇",
-      "█"
+const wchar_t blocks[] = {
+      L' ',
+      L'▁',
+      L'▂',
+      L'▃',
+      L'▄',
+      L'▅',
+      L'▆',
+      L'▇',
+      L'█'
 };
+
+#define WRONG COLOR_RED
+#define CORRECT COLOR_GREEN
 
 // const char* blocks[] = {
 //       "0",
@@ -56,19 +63,36 @@ const char* blocks[] = {
 
 #define HIST_W 40
 
+extern Line *lines;
+extern int curr_line_idx;
+
+#define LINE_START_Y 4
+#define LINE_START_X 5
+
 void printTypingScr(int currSec){
       // seperator line
       mvwhline(win, SEPLINE_Y, SEPLINE_X, ACS_HLINE, SEPLINE_W);
-      
-      // words
       
       // timer
       mvwprintw(win, TIMER_Y, TIMER_X, "%02d:%02d", (test_time - currSec) / 60, (test_time - currSec) % 60);
 
       // indicator
       mvwaddch(win, IND_Y, IND_X, IND_CH);
+      
+      // words
+      for(int l = 0; l < 2; l++){
+            Line *cur_line = &lines[curr_line_idx + l];
+            wmove(win, LINE_START_Y + (2 * l), LINE_START_X); // move start
 
-      wmove(win, IND_Y, IND_X + 2);
+            for (int w = 0; w < cur_line->count; w++){ // for every word
+                  word_view *word = &cur_line->words[w];
+                  extern int words_count;
+                  if (!word->word) mvwprintw(win, l, 1, "%d.\n", words_count);
+                  // waddnwstr(win, word->word, -1); // do not need to print inputs in first state
+            }
+      }
+
+      wmove(win, IND_Y, IND_X + 2); // move typing space
 
       wrefresh(win);
 }
@@ -117,11 +141,11 @@ void printResult(int wpm, int max_wps, int accuracy){
             while (blockVal > 0){
                   if(blockVal >= blocks_size - 1){
                         fprintf(d, "->> %d ",blocks_size -1);
-                        mvwprintw(win, 9 - l, 9 + i, "%s", blocks[blocks_size - 1]);
+                        mvwprintw(win, 9 - l, 9 + i, "%lc", blocks[blocks_size - 1]);
                         blockVal -= blocks_size - 1;
                   }else{
                         fprintf(d, "->> %d ",blockVal);
-                        mvwprintw(win, 9 - l, 9 + i, "%s", blocks[blockVal]);
+                        mvwprintw(win, 9 - l, 9 + i, "%lc", blocks[blockVal]);
                         break;
                   }
                   l++;

@@ -1,4 +1,5 @@
 #include "fingers.h"
+#include "words.h"
 #include <math.h>
 #include <time.h>
 #include <ctype.h>
@@ -17,11 +18,6 @@ const int win_w = 53;
 const int win_h = 12;
 
 int win_x, win_y; // absolute position of program window
-                  
-// words
-wchar_t **words;
-int words_count;
-int words_capacity;
 
 const int test_time = 60; // will be read from config file later
 extern int *graph_wps;
@@ -88,6 +84,9 @@ void run(int duration){
 
       // read words from locale file
       readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
+                                    
+      // initialize lines
+      init_lines();
 
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));

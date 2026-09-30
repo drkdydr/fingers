@@ -1,6 +1,8 @@
 #ifndef WORDS_H
 #define WORDS_H
 
+#include <wchar.h>
+
 #define INPUT_BUF_SIZE 20
 
 typedef struct {
@@ -26,6 +28,7 @@ typedef struct {
 
 // initialize first states of Line *lines;
 void init_lines();
+void print_lines(); // debug
 
 // create brand new line
 Line* new_line();

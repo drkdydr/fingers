@@ -1,0 +1,62 @@
+[
+  {
+    "file": "fingers.c",
+    "arguments": [
+      "gcc",
+      "-D_XOPEN_SOURCE_EXTENDED",
+      "fingers.c",
+      "-o",
+      "program"
+    ],
+    "directory": "/home/dydr/projects/fingers/src",
+    "output": "program"
+  },
+  {
+    "file": "main.c",
+    "arguments": [
+      "gcc",
+      "-D_XOPEN_SOURCE_EXTENDED",
+      "main.c",
+      "-o",
+      "program"
+    ],
+    "directory": "/home/dydr/projects/fingers/src",
+    "output": "program"
+  },
+  {
+    "file": "painter.c",
+    "arguments": [
+      "gcc",
+      "-D_XOPEN_SOURCE_EXTENDED",
+      "painter.c",
+      "-o",
+      "program"
+    ],
+    "directory": "/home/dydr/projects/fingers/src",
+    "output": "program"
+  },
+  {
+    "file": "reader.c",
+    "arguments": [
+      "gcc",
+      "-D_XOPEN_SOURCE_EXTENDED",
+      "reader.c",
+      "-o",
+      "program"
+    ],
+    "directory": "/home/dydr/projects/fingers/src",
+    "output": "program"
+  },
+  {
+    "file": "words.c",
+    "arguments": [
+      "gcc",
+      "-D_XOPEN_SOURCE_EXTENDED",
+      "words.c",
+      "-o",
+      "program"
+    ],
+    "directory": "/home/dydr/projects/fingers/src",
+    "output": "program"
+  }
+]
