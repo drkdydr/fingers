@@ -50,21 +50,15 @@ void init_lines(){
 }
 
 // initialize a word
-void init_wview(word_view *wv) {
+void init_wview(word_view *wv, wchar_t *word) {
 
       wv->cur_idx = 0;
-      wchar_t *word = words[rand() % words_count];
       wv->word = word; // set random word
       wv->len = wcslen(word); // returns size of wide string
 }
 
 // create brand new line
 Line* new_line(){
-                                              
-      // fwprintf(stderr, L"line count : %d\n", lines_count);
-      // fwprintf(stderr, L"line capacity : %d\n", lines_cap);
-      // fwprintf(stderr, L"cur line idx : %d\n", curr_line_idx);
-      // fflush(stderr);
 
       if (lines_count >= lines_cap) {
             lines_cap *= 2;
@@ -83,7 +77,8 @@ Line* new_line(){
 
       // insert words
       int written = 0;
-      while (written <=  WRITE_LINE_W){
+      wchar_t *word = words[rand() % words_count];
+      while (written + wcslen(word) <=  WRITE_LINE_W){
 
             // if line's word array full, expand
             if (line->count >= line->cap) {
@@ -96,14 +91,12 @@ Line* new_line(){
             }
 
             word_view *wv = &line->words[line->count++];
-            init_wview(wv);
-            fwprintf(stderr, L"cur added word: %ls, length: %d\n", wv->word, wcslen(wv->word)); 
+            init_wview(wv, word);
 
             written += wcslen(wv->word) + 1; // 1 for adjusting space
-            // fwprintf(stderr, L"cur written len: %d\n", written); 
-            // fflush(stderr);
+                                             
+            word = words[rand() % words_count]; // generate new word for next cycle
       }
-      fwprintf(stderr, L"\n"); 
       return 0;
 }
 

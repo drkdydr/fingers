@@ -66,8 +66,8 @@ const wchar_t blocks[] = {
 extern Line *lines;
 extern int curr_line_idx;
 
-#define LINE_START_Y 4
-#define LINE_START_X 5
+#define LINE_START_Y 3
+#define LINE_START_X 4
 
 void printTypingScr(int currSec){
       // seperator line
@@ -82,13 +82,12 @@ void printTypingScr(int currSec){
       // words
       for(int l = 0; l < 2; l++){
             Line *cur_line = &lines[curr_line_idx + l];
-            wmove(win, LINE_START_Y + (2 * l), LINE_START_X); // move start
+            int cur_x = LINE_START_X;
+            wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
 
             for (int w = 0; w < cur_line->count; w++){ // for every word
                   word_view *word = &cur_line->words[w];
-                  extern int words_count;
-                  if (!word->word) mvwprintw(win, l, 1, "%d.\n", words_count);
-                  // waddnwstr(win, word->word, -1); // do not need to print inputs in first state
+                  wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
             }
       }
 

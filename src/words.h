@@ -12,7 +12,7 @@ typedef struct {
       wchar_t inputs[INPUT_BUF_SIZE]; // holds input characters
 } word_view;
 
-void init_wview(word_view *wv);
+void init_wview(word_view *wv, wchar_t *word);
 
 typedef struct {
       word_view *words;
