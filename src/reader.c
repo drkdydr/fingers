@@ -57,7 +57,7 @@ void readWordFile(const char *filename){
       
       // // debug:
       // for(int i = 0; i < words_count; i++){
-      //       wprintf(L"%s, ", words[i]);
+      //       wprintf(L"%ls, ", words[i]);
       // }
       // wprintf(L"\n");
 

@@ -1,5 +1,6 @@
 #include "fingers.h"
 #include "words.h"
+#include <ctype.h>
 #include <math.h>
 #ifndef _XOPEN_SOURCE_EXTENDED
 #define _XOPEN_SOURCE_EXTENDED
@@ -61,6 +62,34 @@ const wchar_t blocks[] = {
 
 #define HIST_W 40
 
+void alignWin(){
+      extern int win_x, win_y;
+
+      win_y = (LINES - win_h) / 2;
+      win_x = (COLS - win_w) / 2;
+
+      werase(win);
+      mvwin(win, win_y, win_x);
+      printBorder();
+      wrefresh(win);
+}
+
+void printBorder(){
+      // write application name as header
+      mvwhline(win, 0, 2, ' ', strlen(name) + 2);
+      wmove(win, 0, 3); // move cursor
+      size_t nameLen = strlen(name);
+      for(int i = 0; i < nameLen; i++){
+         waddch(win, toupper((unsigned char) name[i]));}
+
+      // draw box
+      extern int win_x, win_y;
+      win = newwin(win_h, win_w, win_y, win_x);
+      box(win, 0, 0);
+
+      wrefresh(win);
+}
+
 extern Line *lines;
 extern int curr_line_idx;
 
@@ -70,7 +99,7 @@ void printTimer(int cur_sec){
 }
 
 // just print input dont handle anything more
-void printInput(int inp_wch, int word_cur_wch, int x, int cur){
+void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x, int cur){
       // print both input line and test line
       if (inp_wch == KEY_BACKSPACE){
 
@@ -90,7 +119,7 @@ void printInput(int inp_wch, int word_cur_wch, int x, int cur){
       }
 }
 
-void printTypingScr(){
+void printTypingScr(int cur_sec){
       curs_set(1); // makes cursor visible
                    
       // seperator line
@@ -104,17 +133,20 @@ void printTypingScr(){
       
       // words
       for(int l = 0; l < 2; l++){
-            Line *cur_line = &lines[curr_line_idx + l];
+            Line *line = &lines[curr_line_idx + l];
             int cur_x = LINE_START_X;
             wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
 
-            for (int w = 0; w < cur_line->count; w++){ // for every word
-                  word_view *word = &cur_line->words[w];
+            for (int w = 0; w < line->count; w++){ // for every word
+                  word_view *word = &line->words[w];
                   wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
             }
       }
 
       wmove(win, IND_Y, IND_X + 2); // move typing space
+                                    
+      // word_view *cur_word = 
+      // for (int i = 0; i < ) 
 
       wrefresh(win);
 }

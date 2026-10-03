@@ -31,25 +31,7 @@ int main(int argc, char **argv){
       if (time_lim_str)
             time_limit = atoi(time_lim_str);
 
-      // readWordFile("/home/dydr/projects/fingers/words/tr.csv");
-      // init_lines();
-      // print_lines();
-      // return 0;
-
-      // screen properties
-      initscr();
-	cbreak();
-      noecho();
-	keypad(stdscr, TRUE);
-
-      if (has_colors()) {
-            start_color();
-            use_default_colors();
-      }
-      refresh();
-
-
-      run(time_limit);
+      start(time_limit);
       sleep(11115);
 
       endwin();

@@ -1,6 +1,7 @@
 #include "fingers.h"
 #include "words.h"
 #include <math.h>
+#include <signal.h>
 #include <time.h>
 #include <ctype.h>
 #include <curses.h>
@@ -27,6 +28,16 @@ extern int graph_w;
 
 extern Line *lines;
 extern int curr_line_idx;
+
+// TEST PROPERTIES
+// seconds
+int currSec = 0; // which second we are in
+
+// int wpm = 0; 
+// int max_wps = 0; // for graph generation
+
+// int key_stroke = 0;
+// int accuracy = 0;
 
 
 FILE *d; // debug log file
@@ -64,7 +75,116 @@ void printWPS(){
       }
 }
 
-void run(int duration){
+// look input and change state of words and lines
+void handle_input(int status, int wch){
+      // handle input
+      if (status == KEY_CODE_YES){ // special characters
+            if (wch == KEY_RESIZE){
+                  alignWin();
+                  printTypingScr(currSec);
+            } else if (wch == KEY_ENTER){
+
+            } else if (wch == KEY_BACKSPACE) {
+
+            }
+      } else if (status == OK) {
+            if (wch == L'\n' || wch == L'\r'){ // ENTER
+
+            } else if (wch == 127 || wch == L'\b') { // BACKSPACE
+
+            } else {
+                  
+
+            }
+      } else ; // ERR (error)
+
+      // wadd_wch(win, input);
+      // ignore mouse inputs
+      // printInput(input, L'a', 10, 0);
+}
+
+// typing test part
+void test(){
+      wclear(win);
+      printBorder();
+                                    
+      // initialize lines
+      init_lines();
+
+      // TODO calculate accuracy (correct characters / total typed characters) * 100
+      // wpm formula : (total characters typed / 5) / time (in minutes)
+
+      // Line *cur_line = &lines[curr_line_idx];
+      // word_view *cur_word = &cur_line->words[cur_line->cur];
+
+      wint_t input;
+      int status; // input status (KEY_CODE_YES / OK / ERR)
+
+      while (true){
+            printTypingScr(currSec);
+            while (true){
+                  status = wget_wch(win, &input);
+
+            }
+
+      }
+
+      // // TODO save if its is a record
+      // if (wpm > record_wpm){
+      //          lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
+      //          saveRecord();
+      //          fclose(lb); // close leaderboard file
+      // }
+
+}
+
+int result(){ 
+      wclear(win);
+      printBorder();
+
+      wint_t input;
+      int status;
+
+      // you can calculate wpm like variables in here
+      
+      int wpm = 0, max_wps = 0, key_stroke = 0, accuracy = 0;
+      
+      // auto input (temporary)
+      fillRandom(graph_wps, graph_w, &wpm, &max_wps);
+      // printWPS();
+
+      while (true){
+            status = wget_wch(win, &input);
+            if (status == KEY_CODE_YES && input == KEY_RESIZE) {
+                  alignWin();
+                  printResult(wpm, max_wps, accuracy);
+            }
+            if (status == OK && input == L'r') break;
+            if (status == OK && input == 27) return 1; // exit program
+      }
+      return 0; // no need to exit program
+}
+
+void signalHandler(int sig){
+      destroy();
+      exit(sig);
+}
+
+void init(){
+      signal(SIGINT, signalHandler);
+
+      // screen properties
+      set_escdelay(25);   // milisaniye cinsinden, initscr()'dan ÖNCE çağrılmalı
+      initscr();
+	cbreak();
+      noecho();
+	keypad(stdscr, TRUE);
+
+      if (has_colors()) {
+            start_color();
+            use_default_colors();
+      }
+      refresh();
 
       init_pair(CORRECT, COLOR_GREEN /*foreground*/, -1 /*background*/);
       init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
@@ -79,19 +199,8 @@ void run(int duration){
       win_y = (LINES - win_h) / 2;
       win_x = (COLS - win_w) / 2;
 
-      int currSec = 0; // which second we are in
-
-      int wpm = 0; 
-      int max_wps = 0; // for graph generation
-
-      int key_stroke = 0;
-      int accuracy = 0;
-
       // read words from locale file
       readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
-                                    
-      // initialize lines
-      init_lines();
 
       // initialize wps arrays
       graph_wps = (int*)calloc(graph_w, sizeof(double));
@@ -99,53 +208,28 @@ void run(int duration){
             wprintf(L"error: allocation failed.\n");
             exit(1);
       }
-      
-      // auto input (temporary)
-      fillRandom(graph_wps, graph_w, &wpm, &max_wps);
-      // printWPS();
+}
 
-      // draw box
-      win = newwin(win_h, win_w, win_y, win_x);
-      box(win, 0, 0);
-
-      // write application name as header
-      mvwhline(win, 0, 2, ' ', strlen(name) + 2);
-      wmove(win, 0, 3); // move cursor
-      size_t nameLen = strlen(name);
-      for(int i = 0; i < nameLen; i++){
-         waddch(win, toupper((unsigned char) name[i]));}
-
-      wrefresh(win);
-
-      // TODO calculate accuracy (correct characters / total typed characters) * 100
-      // wpm formula : (total characters typed / 5) / time (in minutes)
-
-      Line *cur_line = &lines[curr_line_idx];
-      word_view *cur_word = &cur_line->words[cur_line->cur];
-
-      wint_t input;
-      int status; // input status (KEY_CODE_YES / OK / ERR)
-
-      while (true){
-            printTypingScr();
-            while (true){
-                  status = wget_wch(win, &input);
-                  printInput(input, L'a', 10, 0);
-                  // wadd_wch(win, input);
-                  // ignore mouse inputs
-            }
-
-      }
-
-      // printResult(wpm, max_wps, accuracy);
-
-      // // TODO save if its is a record
-      // if (wpm > record_wpm){
-               // lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
-      //       saveRecord();
-               // fclose(lb); // close leaderboard file
-      // }
+void destroy(){
       
       fclose(d); // close debug file
+      endwin();
+
+}
+
+void start(int duration){
+      init();
+
+      bool isTest = true;
+      while (true) {
+            if (isTest){
+                  test();
+            }else{ // result screen
+                  if (result()) break; // if result() returns 1 end program
+            }
+            isTest = !isTest;
+      }
+      
+      destroy();
 }
 

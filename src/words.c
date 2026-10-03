@@ -34,6 +34,10 @@ int lines_count;
 int lines_cap;
 int curr_line_idx;
 
+
+Line *cur_line;
+word_view *cur_word;
+
 // initialize first states of Line *lines;
 void init_lines(){
       // initialize lines
@@ -48,6 +52,9 @@ void init_lines(){
 
       // create starting lines
       for (int i = 0; i < 3; i++) new_line(); // start with 3 lines
+      
+      cur_line = &lines[0];
+      cur_word = &cur_line->words[cur_line->cur];
 }
 
 // initialize a word
@@ -72,6 +79,7 @@ Line* new_line(){
       }
 
       Line *line = &lines[lines_count++];
+      if (line) fprintf(stderr, "hello");
       line->count = 0;
       line->cap = 3;
       line->cur = 0;
@@ -92,9 +100,10 @@ Line* new_line(){
                   }
             }
 
+            // if (line->count) fprintf(stderr, "hello");
             word_view *wv = &line->words[line->count++];
-            written += wcslen(wv->word) + 1; // 1 for adjusting space
             init_wview(wv, word, written);
+            written += wcslen(word) + 1; // 1 for adjusting space
 
                                              
             word = words[rand() % words_count]; // generate new word for next cycle
@@ -105,40 +114,12 @@ Line* new_line(){
 extern FILE *d;
 void print_lines(){
       for (int l = 0; l < lines_count; l++){
-            Line *cur_line = &lines[l];
-                  fwprintf(stderr, L"cur line word count: %d\n", cur_line->count);
-            for (int w = 0; w < cur_line->count; w++){
-                  fwprintf(stderr, L"cur word: %ls len: %d\n",cur_line->words[w].word, wcslen(cur_line->words[w].word));
+            Line *line = &lines[l];
+                  fwprintf(stderr, L"cur line word count: %d\n", line->count);
+            for (int w = 0; w < line->count; w++){
+                  fwprintf(stderr, L"cur word: %ls len: %d\n",line->words[w].word, wcslen(line->words[w].word));
                   fflush(stderr);
             }
             fwprintf(stderr, L"\n");
       }
-}
-
-
-// look input and change state of words and lines
-void handle_input(int wch){
-      Line *cur_line = &lines[curr_line_idx];
-      word_view *cur_word = &cur_line->words[cur_line->cur];
-
-      if (wch == KEY_ENTER || wch == L' '){ // if pressed ENTER or SPACE go next word
-            if (cur_line->cur >= cur_line->count - 1){ // if last word of line
-                  curr_line_idx++;
-                  if (curr_line_idx + 1 > lines_count) new_line();
-                  return;
-            }
-            cur_line->cur++;
-      }else if (wch == KEY_BACKSPACE){ // if pressed BACKSPACE go one char
-            if (cur_word->cur_idx > 0) cur_word->cur_idx--;
-      }else{ // save input to word's inputs
-            if (cur_word->cur_idx >= INPUT_BUF_SIZE) return; // if buffer is full, ignore
-            cur_word->inputs[++cur_word->cur_idx] = wch;
-      }
-
-}
-
-int current_char(){
-      Line *cur_line = &lines[curr_line_idx];
-      word_view *cur_wv = &cur_line->words[cur_line->cur];
-      return cur_wv->word[cur_wv->cur_idx];
 }

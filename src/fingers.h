@@ -14,13 +14,20 @@
 
 void readWordFile(const char *filename);
 // starts program
-void run(int duration); // no parameter after config file added.
+void start(int duration); // no parameter after config file added.
       void init();
-      // draws typing screen
-      void printTypingScr();
-      void printTimer(int cur_sec);
-      void printInput(int inp_wch, int word_cur_wch, int x, int cur);
+      void destroy();
 
+      void test();
+      int result(); // returns 1 if user wanted to exit
+
+      // draws typing screen
+      void alignWin();
+      void printBorder();
+      void printTypingScr(int cur_sec);
+      void printTimer(int cur_sec);
+      void printInput(int inp_status, wchar_t inp_wch, wchar_t word_cur_wch, int x, int cur); // inp == -1 ENTER, inp == 0 BACKSPACE
+      
 // print result screen
 void printResult(int wpm, int max_wps, int accuracy);
       // // prints speed graph (no need over simplification)

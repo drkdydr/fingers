@@ -22,10 +22,10 @@ typedef struct {
       int count;
 } Line;
 
-// Line *lines;
-// int lines_count;
-// int lines_cap;
-// int curr_line = 0;
+extern Line *lines;
+
+extern Line *cur_line;
+extern word_view *cur_word;
 
 // initialize first states of Line *lines;
 void init_lines();
@@ -35,6 +35,6 @@ void print_lines(); // debug
 Line* new_line();
 
 // look input and change state of words and lines
-void handle_input(int wch);
+void handle_input(int status, int wch);
 
 #endif
