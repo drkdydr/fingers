@@ -115,12 +115,12 @@ void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x /*words x pos
                   printLines();
             }else{
                   // eğer kelimede harf kaldıysa yanlış olarak yaz
-                  wattron(win, WRONG);
+                  wattron(win, COLOR_PAIR(WRONG));
                   wchar_t *remaining = cur_word->word + cur_word->cur_idx;
                   mvwaddwstr(win, LINE_START_Y, cur_word->x + cur_word->cur_idx,
                             remaining);
-                  wrefresh(win);
-                  wattroff(win, WRONG);
+                  wattroff(win, COLOR_PAIR(WRONG));
+                  wnoutrefresh(win);
             }
 
             // clear whole input line
@@ -169,7 +169,16 @@ void printTypingScr(int cur_sec){
       mvwaddch(win, IND_Y, IND_X, IND_CH);
       
       // words
-      printLines();
+      for(int l = 0; l < 2; l++){
+            Line *line = &lines[curr_line_idx + l]; // next lines
+            int cur_x = LINE_START_X;
+            wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
+
+            for (int w = 0; w < line->count; w++){ // for every word
+                  word_view *word = &line->words[w];
+                  wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
+            }
+      }
 
       wmove(win, IND_Y, IND_X + 2); // move typing space
                                     
