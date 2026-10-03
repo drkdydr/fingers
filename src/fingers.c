@@ -25,6 +25,8 @@ extern int graph_w;
 // int wpm = 0;
 // int max_wps = 0; // for graph generation
 
+extern Line *lines;
+extern int curr_line_idx;
 
 
 FILE *d; // debug log file
@@ -63,6 +65,9 @@ void printWPS(){
 }
 
 void run(int duration){
+
+      init_pair(CORRECT, COLOR_GREEN /*foreground*/, -1 /*background*/);
+      init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
 
       d = fopen("debug.log", "w");
       
@@ -115,7 +120,19 @@ void run(int duration){
       // TODO calculate accuracy (correct characters / total typed characters) * 100
       // wpm formula : (total characters typed / 5) / time (in minutes)
 
-      printTypingScr(currSec);
+      Line *cur_line = &lines[curr_line_idx];
+      word_view *cur_word = &cur_line->words[cur_line->cur];
+      while (true){
+            printTypingScr();
+            while (true){
+                  int input = wgetch(win);
+                  printInput(input, L'a', 10, 0);
+                  // wadd_wch(win, input);
+                  // ignore mouse inputs
+            }
+
+      }
+
       // printResult(wpm, max_wps, accuracy);
 
       // // TODO save if its is a record

@@ -39,10 +39,15 @@ int main(int argc, char **argv){
       // screen properties
       initscr();
 	cbreak();
+      noecho();
 	keypad(stdscr, TRUE);
+
+      if (has_colors()) {
+            start_color();
+            use_default_colors();
+      }
       refresh();
 
-      // curs_set(0); // makes cursor invisible
 
       run(time_limit);
       sleep(11115);

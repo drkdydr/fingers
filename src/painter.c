@@ -29,6 +29,7 @@ extern int currSec; // which second we are in
 #define IND_X 4
 #define IND_Y 9
 #define IND_CH '>'
+#define IND_OFFSET 2 // right margin of indicator
 
 extern FILE *d;
 
@@ -45,9 +46,6 @@ const wchar_t blocks[] = {
       L'▇',
       L'█'
 };
-
-#define WRONG COLOR_RED
-#define CORRECT COLOR_GREEN
 
 // const char* blocks[] = {
 //       "0",
@@ -66,15 +64,40 @@ const wchar_t blocks[] = {
 extern Line *lines;
 extern int curr_line_idx;
 
-#define LINE_START_Y 3
-#define LINE_START_X 4
+// change time in every second
+void printTimer(int cur_sec){
+      mvwprintw(win, TIMER_Y, TIMER_X, "%02d:%02d", (test_time - cur_sec) / 60, (test_time - cur_sec) % 60);
+}
 
-void printTypingScr(int currSec){
+// just print input dont handle anything more
+void printInput(int inp_wch, int word_cur_wch, int x, int cur){
+      // print both input line and test line
+      if (inp_wch == KEY_BACKSPACE){
+
+      } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){
+            // clear whole input line
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET, "%*ls", cur, L"");
+      }else{ // normal input
+            // print input to input line
+            int pair = inp_wch == word_cur_wch ? COLOR_PAIR(CORRECT) : COLOR_PAIR(WRONG);
+
+            wattron(win, pair);
+            mvwprintw(win, LINE_START_Y, LINE_START_X + cur, "%lc", inp_wch); 
+            wattroff(win, pair);
+
+            // print input line
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET, "%lc", inp_wch); 
+      }
+}
+
+void printTypingScr(){
+      curs_set(1); // makes cursor visible
+                   
       // seperator line
       mvwhline(win, SEPLINE_Y, SEPLINE_X, ACS_HLINE, SEPLINE_W);
       
       // timer
-      mvwprintw(win, TIMER_Y, TIMER_X, "%02d:%02d", (test_time - currSec) / 60, (test_time - currSec) % 60);
+      printTimer(0);
 
       // indicator
       mvwaddch(win, IND_Y, IND_X, IND_CH);
@@ -106,6 +129,7 @@ int graph_w = 40;
 
 // print result screen
 void printResult(int wpm, int max_wps, int accuracy){
+      curs_set(0); // makes cursor invisible
       const char *header = "-- RESULTS --";
       mvwprintw(win, 1, (win_w - strlen(header)) / 2, "%s", header);
 

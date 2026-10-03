@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <wchar.h>
 #include "words.h"
+#include "fingers.h"
 
 // words
 wchar_t **words;
@@ -50,11 +51,12 @@ void init_lines(){
 }
 
 // initialize a word
-void init_wview(word_view *wv, wchar_t *word) {
+void init_wview(word_view *wv, wchar_t *word, int written) {
 
       wv->cur_idx = 0;
       wv->word = word; // set random word
       wv->len = wcslen(word); // returns size of wide string
+      wv->x = LINE_START_X + written;
 }
 
 // create brand new line
@@ -91,9 +93,9 @@ Line* new_line(){
             }
 
             word_view *wv = &line->words[line->count++];
-            init_wview(wv, word);
-
             written += wcslen(wv->word) + 1; // 1 for adjusting space
+            init_wview(wv, word, written);
+
                                              
             word = words[rand() % words_count]; // generate new word for next cycle
       }
@@ -133,4 +135,10 @@ void handle_input(int wch){
             cur_word->inputs[++cur_word->cur_idx] = wch;
       }
 
+}
+
+int current_char(){
+      Line *cur_line = &lines[curr_line_idx];
+      word_view *cur_wv = &cur_line->words[cur_line->cur];
+      return cur_wv->word[cur_wv->cur_idx];
 }

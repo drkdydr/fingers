@@ -10,9 +10,10 @@ typedef struct {
       int len;
       int cur_idx;
       wchar_t inputs[INPUT_BUF_SIZE]; // holds input characters
+      int x; // x position in win
 } word_view;
 
-void init_wview(word_view *wv, wchar_t *word);
+void init_wview(word_view *wv, wchar_t *word, int written);
 
 typedef struct {
       word_view *words;
