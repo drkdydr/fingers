@@ -122,10 +122,14 @@ void run(int duration){
 
       Line *cur_line = &lines[curr_line_idx];
       word_view *cur_word = &cur_line->words[cur_line->cur];
+
+      wint_t input;
+      int status; // input status (KEY_CODE_YES / OK / ERR)
+
       while (true){
             printTypingScr();
             while (true){
-                  int input = wgetch(win);
+                  status = wget_wch(win, &input);
                   printInput(input, L'a', 10, 0);
                   // wadd_wch(win, input);
                   // ignore mouse inputs
