@@ -11,7 +11,6 @@ int words_count;
 int words_capacity;
 
 #define BUFFER_SIZE 100
-#define WRITE_LINE_W 45
 
 // const char *wordFileName = "en_US.csv";
 
@@ -53,8 +52,8 @@ void init_lines(){
       // create starting lines
       for (int i = 0; i < 3; i++) new_line(); // start with 3 lines
       
-      cur_line = &lines[0];
-      cur_word = &cur_line->words[cur_line->cur];
+      cur_line = &lines[0]; // first line's
+      cur_word = &cur_line->words[0]; //first word
 }
 
 // initialize a word
@@ -79,7 +78,6 @@ Line* new_line(){
       }
 
       Line *line = &lines[lines_count++];
-      if (line) fprintf(stderr, "hello");
       line->count = 0;
       line->cap = 3;
       line->cur = 0;
@@ -100,7 +98,6 @@ Line* new_line(){
                   }
             }
 
-            // if (line->count) fprintf(stderr, "hello");
             word_view *wv = &line->words[line->count++];
             init_wview(wv, word, written);
             written += wcslen(word) + 1; // 1 for adjusting space

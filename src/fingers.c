@@ -76,31 +76,38 @@ void printWPS(){
 }
 
 // look input and change state of words and lines
-void handle_input(int status, int wch){
+void handle_input(int status, wint_t input){
+      wchar_t inp_wch = (wchar_t) input;
+      wchar_t cur_wchar = cur_word->word[cur_word->cur_idx];
       // handle input
-      if (status == KEY_CODE_YES){ // special characters
-            if (wch == KEY_RESIZE){
-                  alignWin();
-                  printTypingScr(currSec);
-            } else if (wch == KEY_ENTER){
+      if (input == KEY_RESIZE){
+            alignWin();
+            printTypingScr(currSec);
+            return;
+      }
 
-            } else if (wch == KEY_BACKSPACE) {
+      printInput(status, inp_wch, cur_wchar, cur_word->x, cur_word->cur_idx);
 
+      if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
+            if (cur_word->cur_idx > 0)
+                  cur_word->cur_idx--;
+
+      } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ 
+            if (cur_line->cur >= cur_line->count - 1){
+                  cur_line = &lines[++curr_line_idx];
+                  cur_word = &cur_line->words[0];
+            }else{
+                  cur_line->cur++;
+                  cur_word++;
             }
-      } else if (status == OK) {
-            if (wch == L'\n' || wch == L'\r'){ // ENTER
 
-            } else if (wch == 127 || wch == L'\b') { // BACKSPACE
+      } else{ // normal input
+            if (cur_word->cur_idx < INPUT_BUF_SIZE)
+             cur_word->inputs[cur_word->cur_idx++] = inp_wch;
+      }
 
-            } else {
-                  
 
-            }
-      } else ; // ERR (error)
-
-      // wadd_wch(win, input);
       // ignore mouse inputs
-      // printInput(input, L'a', 10, 0);
 }
 
 // typing test part
@@ -124,6 +131,7 @@ void test(){
             printTypingScr(currSec);
             while (true){
                   status = wget_wch(win, &input);
+                  handle_input(status, input);
 
             }
 

@@ -26,6 +26,7 @@ void start(int duration); // no parameter after config file added.
       void printBorder();
       void printTypingScr(int cur_sec);
       void printTimer(int cur_sec);
+      void printLines();
       void printInput(int inp_status, wchar_t inp_wch, wchar_t word_cur_wch, int x, int cur); // inp == -1 ENTER, inp == 0 BACKSPACE
       
 // print result screen

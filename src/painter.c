@@ -69,9 +69,9 @@ void alignWin(){
       win_x = (COLS - win_w) / 2;
 
       werase(win);
+      wnoutrefresh(win); // saves changes to memory and doupdate prints these changes
       mvwin(win, win_y, win_x);
       printBorder();
-      wrefresh(win);
 }
 
 void printBorder(){
@@ -87,7 +87,7 @@ void printBorder(){
       win = newwin(win_h, win_w, win_y, win_x);
       box(win, 0, 0);
 
-      wrefresh(win);
+      wnoutrefresh(win);
 }
 
 extern Line *lines;
@@ -99,24 +99,61 @@ void printTimer(int cur_sec){
 }
 
 // just print input dont handle anything more
-void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x, int cur){
+void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x /*words x position*/, int cur /*current index*/ ){
       // print both input line and test line
-      if (inp_wch == KEY_BACKSPACE){
+      if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
+            mvwprintw(win, LINE_START_Y, cur_word->x + cur - 1, "%lc", cur_word->word[cur_word->cur_idx - 1]); // clear true/false info
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + cur - 1, " "); 
 
-      } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){
+      } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ // enter and space ends input for current word
+            
+            if (cur_line->cur >= cur_line->count - 1){
+                  // clear prev lines
+                  for (int l = 0; l < 2; l++){
+                        mvwprintw(win, LINE_START_Y, LINE_START_X, "%*s", WRITE_LINE_W, ""); 
+                  }
+                  printLines();
+            }else{
+                  // eğer kelimede harf kaldıysa yanlış olarak yaz
+                  wattron(win, WRONG);
+                  wchar_t *remaining = cur_word->word + cur_word->cur_idx;
+                  mvwaddwstr(win, LINE_START_Y, cur_word->x + cur_word->cur_idx,
+                            remaining);
+                  wrefresh(win);
+                  wattroff(win, WRONG);
+            }
+
             // clear whole input line
             mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET, "%*ls", cur, L"");
+
+            // move cursor to first pos
+            wmove(win, IND_Y, IND_X + 1 + IND_OFFSET);
+
       }else{ // normal input
             // print input to input line
             int pair = inp_wch == word_cur_wch ? COLOR_PAIR(CORRECT) : COLOR_PAIR(WRONG);
 
             wattron(win, pair);
-            mvwprintw(win, LINE_START_Y, LINE_START_X + cur, "%lc", inp_wch); 
+            mvwprintw(win, LINE_START_Y, cur_word->x + cur, "%lc", inp_wch); 
             wattroff(win, pair);
 
             // print input line
-            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET, "%lc", inp_wch); 
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + cur, "%lc", inp_wch); 
       }
+}
+
+void printLines() {
+      for(int l = 0; l < 2; l++){
+            Line *line = &lines[curr_line_idx + l + 1]; // next lines
+            int cur_x = LINE_START_X;
+            wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
+
+            for (int w = 0; w < line->count; w++){ // for every word
+                  word_view *word = &line->words[w];
+                  wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
+            }
+      }
+
 }
 
 void printTypingScr(int cur_sec){
@@ -132,16 +169,7 @@ void printTypingScr(int cur_sec){
       mvwaddch(win, IND_Y, IND_X, IND_CH);
       
       // words
-      for(int l = 0; l < 2; l++){
-            Line *line = &lines[curr_line_idx + l];
-            int cur_x = LINE_START_X;
-            wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
-
-            for (int w = 0; w < line->count; w++){ // for every word
-                  word_view *word = &line->words[w];
-                  wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
-            }
-      }
+      printLines();
 
       wmove(win, IND_Y, IND_X + 2); // move typing space
                                     
