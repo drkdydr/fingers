@@ -50,7 +50,7 @@ void init_lines(){
       curr_line_idx = 0;
 
       // create starting lines
-      for (int i = 0; i < 3; i++) new_line(); // start with 3 lines
+      for (int i = 0; i < 5; i++) new_line(); // start with 5 lines
       
       cur_line = &lines[0]; // first line's
       cur_word = &cur_line->words[0]; //first word
@@ -79,7 +79,7 @@ Line* new_line(){
 
       Line *line = &lines[lines_count++];
       line->count = 0;
-      line->cap = 3;
+      line->cap = 5;
       line->cur = 0;
       line->words = malloc(line->cap * sizeof(word_view));
 

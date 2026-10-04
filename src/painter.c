@@ -8,6 +8,10 @@
 #include <curses.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/param.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdio.h>
 
 extern WINDOW *win;
 extern const int win_w;
@@ -90,8 +94,8 @@ void printBorder(){
       wnoutrefresh(win);
 }
 
-extern Line *lines;
-extern int curr_line_idx;
+// extern Line *lines;
+// extern int curr_line_idx;
 
 // change time in every second
 void printTimer(int cur_sec){
@@ -104,14 +108,11 @@ void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x /*words x pos
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
             mvwprintw(win, LINE_START_Y, cur_word->x + cur - 1, "%lc", cur_word->word[cur_word->cur_idx - 1]); // clear true/false info
             mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + cur - 1, " "); 
+            wmove(win, IND_Y, IND_X + 1 + IND_OFFSET + MAX(cur - 1, 0)); 
 
       } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ // enter and space ends input for current word
             
             if (cur_line->cur >= cur_line->count - 1){
-                  // clear prev lines
-                  for (int l = 0; l < 2; l++){
-                        mvwprintw(win, LINE_START_Y, LINE_START_X, "%*s", WRITE_LINE_W, ""); 
-                  }
                   printLines();
             }else{
                   // eğer kelimede harf kaldıysa yanlış olarak yaz
@@ -120,6 +121,16 @@ void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x /*words x pos
                   mvwaddwstr(win, LINE_START_Y, cur_word->x + cur_word->cur_idx,
                             remaining);
                   wattroff(win, COLOR_PAIR(WRONG));
+
+                  if (cur_word->cur_idx >= cur_word->len){
+                        // print right side of line again (if overflow)
+                        word_view *next_word = cur_word + 1;
+                        for (int i = cur_line->cur + 1; i < cur_line->count; i++){
+                              word_view *word = &cur_line->words[i];
+                              mvwprintw(win, LINE_START_Y, word->x - 1, " %ls", word->word);
+                        }
+                  }
+
                   wnoutrefresh(win);
             }
 
@@ -144,6 +155,9 @@ void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x /*words x pos
 
 void printLines() {
       for(int l = 0; l < 2; l++){
+            // clear prev line
+            mvwprintw(win, LINE_START_Y + (2 * l), LINE_START_X, "%*s", WRITE_LINE_W, ""); 
+
             Line *line = &lines[curr_line_idx + l + 1]; // next lines
             int cur_x = LINE_START_X;
             wmove(win, LINE_START_Y + (2 * l), cur_x); // move start

@@ -26,8 +26,8 @@ extern int graph_w;
 // int wpm = 0;
 // int max_wps = 0; // for graph generation
 
-extern Line *lines;
-extern int curr_line_idx;
+// extern Line *lines;
+// extern int curr_line_idx;
 
 // TEST PROPERTIES
 // seconds
@@ -94,7 +94,12 @@ void handle_input(int status, wint_t input){
 
       } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ 
             if (cur_line->cur >= cur_line->count - 1){
-                  cur_line = &lines[++curr_line_idx];
+                  if (curr_line_idx + 3 >= lines_count) // erişmeye çalıştığımız line initialize edilmiş mi?
+                        for(int i = 0; i < 2; i++) new_line();
+
+                  curr_line_idx++;
+                  // cur_line++; // realloc kullandığımız için lines adresi değişebilir bu da seg fault'a sebep olur
+                  cur_line = &lines[curr_line_idx];
                   cur_word = &cur_line->words[0];
             }else{
                   cur_line->cur++;
@@ -175,11 +180,15 @@ int result(){
 
 void signalHandler(int sig){
       destroy();
+      if (sig == SIGSEGV){
+            printf("seg fault yedin aga :(\n");
+      }
       exit(sig);
 }
 
 void init(){
       signal(SIGINT, signalHandler);
+      signal(SIGSEGV, signalHandler);
 
       // screen properties
       set_escdelay(25);   // milisaniye cinsinden, initscr()'dan ÖNCE çağrılmalı
