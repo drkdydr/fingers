@@ -15,17 +15,9 @@ int words_capacity;
 // const char *wordFileName = "en_US.csv";
 
 // typedef struct {
-//       wchar_t *word;
-//       int len;
-//       int cur_idx;
-//       wchar_t inputs[INPUT_BUF_SIZE]; // holds input characters
-// } word_view;
-
-// typedef struct {
-//       word_view **words;
-//       int cur;
-//       int cap;
-//       int count;
+      // wchar_t content[WRITE_LINE_W + 1]; // for \0
+      // wchar_t inputs[WRITE_LINE_W + 1];
+      // int cur; // current char's index
 // } Line;
 
 Line *lines;
@@ -35,7 +27,7 @@ int curr_line_idx;
 
 
 Line *cur_line;
-word_view *cur_word;
+// word_view *cur_word;
 
 // initialize first states of Line *lines;
 void init_lines(){
@@ -53,16 +45,7 @@ void init_lines(){
       for (int i = 0; i < 5; i++) new_line(); // start with 5 lines
       
       cur_line = &lines[0]; // first line's
-      cur_word = &cur_line->words[0]; //first word
-}
-
-// initialize a word
-void init_wview(word_view *wv, wchar_t *word, int written) {
-
-      wv->cur_idx = 0;
-      wv->word = word; // set random word
-      wv->len = wcslen(word); // returns size of wide string
-      wv->x = LINE_START_X + written;
+      // cur_word = &cur_line->words[0]; //first word
 }
 
 // create brand new line
@@ -78,45 +61,26 @@ Line* new_line(){
       }
 
       Line *line = &lines[lines_count++];
-      line->count = 0;
-      line->cap = 5;
       line->cur = 0;
-      line->words = malloc(line->cap * sizeof(word_view));
+      line->cur_word = 0;
 
       // insert words
       int written = 0;
-      wchar_t *word = words[rand() % words_count];
-      while (written + wcslen(word) <=  WRITE_LINE_W){
+      while (true){
+            // get random word from word list
+            wchar_t *word = words[rand() % words_count];
+            size_t wlen = wcslen(word);
 
-            // if line's word array full, expand
-            if (line->count >= line->cap) {
-                  line->cap += 3;
-                  line->words = realloc(line->words, sizeof(word_view[line->cap]));
-                  if (!line->words){
-                        wprintf(L"memory allocation failed.\n");
-                        exit(1);
-                  }
-            }
+            if (written + wlen >  WRITE_LINE_W) break;
 
-            word_view *wv = &line->words[line->count++];
-            init_wview(wv, word, written);
-            written += wcslen(word) + 1; // 1 for adjusting space
+            wmemcpy(&line->content[written], word, wlen);
 
-                                             
-            word = words[rand() % words_count]; // generate new word for next cycle
+            written += wcslen(word); // 1 for adjusting space
+            line->content[written++] = L' '; // seperate words with space
       }
+
+      // null terminator
+      line->content[written - 1] = L'\0'; // -1 koymasam "s" + " " + "\0"
+
       return 0;
-}
-
-extern FILE *d;
-void print_lines(){
-      for (int l = 0; l < lines_count; l++){
-            Line *line = &lines[l];
-                  fwprintf(stderr, L"cur line word count: %d\n", line->count);
-            for (int w = 0; w < line->count; w++){
-                  fwprintf(stderr, L"cur word: %ls len: %d\n",line->words[w].word, wcslen(line->words[w].word));
-                  fflush(stderr);
-            }
-            fwprintf(stderr, L"\n");
-      }
 }

@@ -1,26 +1,18 @@
 #ifndef WORDS_H
 #define WORDS_H
 
+#include <stdbool.h>
 #include <wchar.h>
 
-#define INPUT_BUF_SIZE 20
+#define INPUT_BUF_SIZE 60
 #define WRITE_LINE_W 45
 
 typedef struct {
-      wchar_t *word;
-      int len;
-      int cur_idx; // current character idx
-      wchar_t inputs[INPUT_BUF_SIZE]; // holds input characters
-      int x; // x position in win
-} word_view;
-
-void init_wview(word_view *wv, wchar_t *word, int written);
-
-typedef struct {
-      word_view *words;
-      int cur; // current word's index
-      int cap;
-      int count;
+      wchar_t content[WRITE_LINE_W + 1]; // for \0
+      wchar_t inputs[INPUT_BUF_SIZE];
+      int cur; // current char's index
+      int cur_word; // current word's index
+      bool overflow;
 } Line;
 
 extern Line *lines;
@@ -29,7 +21,7 @@ extern int lines_cap;
 extern int curr_line_idx;
 
 extern Line *cur_line;
-extern word_view *cur_word;
+// extern word_view *cur_word;
 
 // initialize first states of Line *lines;
 void init_lines();

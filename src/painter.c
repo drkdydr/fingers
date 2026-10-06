@@ -11,7 +11,6 @@
 #include <sys/param.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdio.h>
 
 extern WINDOW *win;
 extern const int win_w;
@@ -103,69 +102,56 @@ void printTimer(int cur_sec){
 }
 
 // just print input dont handle anything more
-void printInput(int inp_stat, int inp_wch, int word_cur_wch, int x /*words x position*/, int cur /*current index*/ ){
+void printInput(int inp_stat, int inp_wch){
+      int cur_idx = cur_line->cur;
+      wchar_t *cur_wch = &cur_line->content[cur_idx];
+      int inp_line_idx = cur_idx - cur_line->cur_word;
+
       // print both input line and test line
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
-            mvwprintw(win, LINE_START_Y, cur_word->x + cur - 1, "%lc", cur_word->word[cur_word->cur_idx - 1]); // clear true/false info
-            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + cur - 1, " "); 
-            wmove(win, IND_Y, IND_X + 1 + IND_OFFSET + MAX(cur - 1, 0)); 
+            mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx - 1, "%lc", *(cur_wch - 1)); // clear true/false info
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + inp_line_idx - 1, " "); // clear from input line
+            wmove(win, IND_Y, IND_X + 1 + IND_OFFSET + MAX(inp_line_idx - 1, 0)); 
 
       } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ // enter and space ends input for current word
-            
-            if (cur_line->cur >= cur_line->count - 1){
+            // eğer kelimede harf kaldıysa yanlış olarak yaz
+            wattron(win, COLOR_PAIR(WRONG));
+            while (cur_line->content[cur_idx] != L' ' && cur_line->content[cur_idx] != L'\0') 
+                  mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx, &cur_line->content[cur_idx++], 1);
+            wattroff(win, COLOR_PAIR(WRONG));
+
+            if (cur_idx == WRITE_LINE_W) // if line ended
                   printLines();
-            }else{
-                  // eğer kelimede harf kaldıysa yanlış olarak yaz
-                  wattron(win, COLOR_PAIR(WRONG));
-                  wchar_t *remaining = cur_word->word + cur_word->cur_idx;
-                  mvwaddwstr(win, LINE_START_Y, cur_word->x + cur_word->cur_idx,
-                            remaining);
-                  wattroff(win, COLOR_PAIR(WRONG));
-
-                  if (cur_word->cur_idx >= cur_word->len){
-                        // print right side of line again (if overflow)
-                        word_view *next_word = cur_word + 1;
-                        for (int i = cur_line->cur + 1; i < cur_line->count; i++){
-                              word_view *word = &cur_line->words[i];
-                              mvwprintw(win, LINE_START_Y, word->x - 1, " %ls", word->word);
-                        }
-                  }
-
-                  wnoutrefresh(win);
+            else{
+                  // reprint rest of line (if overflow this prevents overwrite later words)
+                  mvwaddwstr(win, LINE_START_Y, LINE_START_X + cur_idx, cur_line->content + cur_idx);
             }
 
             // clear whole input line
-            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET, "%*ls", cur, L"");
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET, "%-*ls", inp_line_idx + 1, L"");
+
+            wnoutrefresh(win);
 
             // move cursor to first pos
             wmove(win, IND_Y, IND_X + 1 + IND_OFFSET);
 
-      }else{ // normal input
+      }else if (inp_stat != KEY_CODE_YES){ // normal input
             // print input to input line
-            int pair = inp_wch == word_cur_wch ? COLOR_PAIR(CORRECT) : COLOR_PAIR(WRONG);
+            int pair = inp_wch == *cur_wch ? COLOR_PAIR(CORRECT) : COLOR_PAIR(WRONG);
 
             wattron(win, pair);
-            mvwprintw(win, LINE_START_Y, cur_word->x + cur, "%lc", inp_wch); 
+            mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx, "%lc", inp_wch); 
             wattroff(win, pair);
 
             // print input line
-            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + cur, "%lc", inp_wch); 
+            mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + inp_line_idx, "%lc", inp_wch); 
       }
 }
 
 void printLines() {
       for(int l = 0; l < 2; l++){
-            // clear prev line
-            mvwprintw(win, LINE_START_Y + (2 * l), LINE_START_X, "%*s", WRITE_LINE_W, ""); 
-
             Line *line = &lines[curr_line_idx + l + 1]; // next lines
-            int cur_x = LINE_START_X;
-            wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
-
-            for (int w = 0; w < line->count; w++){ // for every word
-                  word_view *word = &line->words[w];
-                  wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
-            }
+            mvwprintw(win,LINE_START_Y + (2 * l), LINE_START_X, "%-*ls ", WRITE_LINE_W, line->content); // this also clears prev line (- aligns left)
       }
 
 }
@@ -184,14 +170,8 @@ void printTypingScr(int cur_sec){
       
       // words
       for(int l = 0; l < 2; l++){
-            Line *line = &lines[curr_line_idx + l]; // next lines
-            int cur_x = LINE_START_X;
-            wmove(win, LINE_START_Y + (2 * l), cur_x); // move start
-
-            for (int w = 0; w < line->count; w++){ // for every word
-                  word_view *word = &line->words[w];
-                  wprintw(win, "%ls ", word->word); // do not need to print inputs in first state
-            }
+            Line *line = &lines[l]; // next lines
+            mvwprintw(win,LINE_START_Y + (2 * l), LINE_START_X, "%-*ls ", WRITE_LINE_W, line->content); // this also clears prev line
       }
 
       wmove(win, IND_Y, IND_X + 2); // move typing space

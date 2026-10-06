@@ -78,7 +78,7 @@ void printWPS(){
 // look input and change state of words and lines
 void handle_input(int status, wint_t input){
       wchar_t inp_wch = (wchar_t) input;
-      wchar_t cur_wchar = cur_word->word[cur_word->cur_idx];
+
       // handle input
       if (input == KEY_RESIZE){
             alignWin();
@@ -86,31 +86,46 @@ void handle_input(int status, wint_t input){
             return;
       }
 
-      printInput(status, inp_wch, cur_wchar, cur_word->x, cur_word->cur_idx);
+      printInput(status, inp_wch);
 
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
-            if (cur_word->cur_idx > 0)
-                  cur_word->cur_idx--;
+            if (cur_line->cur > cur_line->cur_word)
+                  cur_line->cur--;
 
       } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ 
-            if (cur_line->cur >= cur_line->count - 1){
-                  if (curr_line_idx + 3 >= lines_count) // erişmeye çalıştığımız line initialize edilmiş mi?
-                        for(int i = 0; i < 2; i++) new_line();
+            wchar_t *cur_wchar = &cur_line->content[cur_line->cur_word];
 
-                  curr_line_idx++;
+            // skip next word
+            while (*cur_wchar != L' ' && *cur_wchar != L'\0') cur_wchar++; // we cannot use cur because of overflow condition
+
+            if (*cur_wchar == L'\0'){
+                  // fprintf(stderr, "null char found!\n");
+                  // fflush(stderr);
+                  if (curr_line_idx + 3 >= lines_count) // erişmeye çalıştığımız line initialize edilmiş mi?
+                        for(int i = 0; i < 2; i++) new_line(); // create 2 new lines
+
                   // cur_line++; // realloc kullandığımız için lines adresi değişebilir bu da seg fault'a sebep olur
-                  cur_line = &lines[curr_line_idx];
-                  cur_word = &cur_line->words[0];
-            }else{
-                  cur_line->cur++;
-                  cur_word++;
+                  cur_line = &lines[++curr_line_idx];
+            } else { // if current char is space
+                  cur_wchar++; // skip space
+                  cur_line->cur = cur_line->cur_word = cur_wchar - cur_line->content;
             }
 
       } else{ // normal input
-            if (cur_word->cur_idx < INPUT_BUF_SIZE)
-             cur_word->inputs[cur_word->cur_idx++] = inp_wch;
+            // do not store any input, just store true/false info (for wpm falan filan)
+            
+            // if (cur_line->cur < INPUT_BUF_SIZE)
+            //       cur_line->inputs[cur_line->cur++] = inp_wch;
+            cur_line->cur++;
       }
 
+      // if (cur_wchar == L' '){
+      //       // skip space
+      //       cur_line->cur_word = ++cur_line->cur;
+      // } else if (cur_wchar == L'\0'){ // if end of line
+      //       cur_line = &lines[++curr_line_idx];
+      //       // cur_wchar = cur_line->content[cur_line->cur];
+      // }
 
       // ignore mouse inputs
 }

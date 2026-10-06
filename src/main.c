@@ -12,6 +12,7 @@ extern const char *name; // fingers
                          
 // TODO
 // fingers'taki gereksiz constant'ları temizle
+// fix overflow
 
 int main(int argc, char **argv){
       setlocale(LC_ALL, "");
