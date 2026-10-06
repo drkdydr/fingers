@@ -106,6 +106,7 @@ void handle_input(int status, wint_t input){
 
                   // cur_line++; // realloc kullandığımız için lines adresi değişebilir bu da seg fault'a sebep olur
                   cur_line = &lines[++curr_line_idx];
+                  printLines();
             } else { // if current char is space
                   cur_wchar++; // skip space
                   cur_line->cur = cur_line->cur_word = cur_wchar - cur_line->content;

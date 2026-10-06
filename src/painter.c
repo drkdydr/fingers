@@ -120,9 +120,7 @@ void printInput(int inp_stat, int inp_wch){
                   mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx, &cur_line->content[cur_idx++], 1);
             wattroff(win, COLOR_PAIR(WRONG));
 
-            if (cur_idx == WRITE_LINE_W) // if line ended
-                  printLines();
-            else{
+            if (cur_idx != WRITE_LINE_W){ // if line is not ended
                   // reprint rest of line (if overflow this prevents overwrite later words)
                   mvwaddwstr(win, LINE_START_Y, LINE_START_X + cur_idx, cur_line->content + cur_idx);
             }
@@ -150,7 +148,7 @@ void printInput(int inp_stat, int inp_wch){
 
 void printLines() {
       for(int l = 0; l < 2; l++){
-            Line *line = &lines[curr_line_idx + l + 1]; // next lines
+            Line *line = &lines[curr_line_idx + l]; // next lines
             mvwprintw(win,LINE_START_Y + (2 * l), LINE_START_X, "%-*ls ", WRITE_LINE_W, line->content); // this also clears prev line (- aligns left)
       }
 
