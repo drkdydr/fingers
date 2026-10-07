@@ -89,8 +89,12 @@ void handle_input(int status, wint_t input){
       printInput(status, inp_wch);
 
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
-            if (cur_line->cur > cur_line->cur_word)
+            if (cur_line->cur > cur_line->cur_word){
+                  wchar_t *cur_wch = &cur_line->content[cur_line->cur];
+                  if (*cur_wch == L'\0' || *cur_wch == L' ')
+                        cur_line->overflow = false;
                   cur_line->cur--;
+            }
 
       } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ 
             wchar_t *cur_wchar = &cur_line->content[cur_line->cur_word];
@@ -108,16 +112,17 @@ void handle_input(int status, wint_t input){
                   cur_line = &lines[++curr_line_idx];
                   printLines();
             } else { // if current char is space
+                  cur_line->overflow = false;
                   cur_wchar++; // skip space
                   cur_line->cur = cur_line->cur_word = cur_wchar - cur_line->content;
             }
 
       } else{ // normal input
             // do not store any input, just store true/false info (for wpm falan filan)
-            
-            // if (cur_line->cur < INPUT_BUF_SIZE)
-            //       cur_line->inputs[cur_line->cur++] = inp_wch;
             cur_line->cur++;
+            wchar_t *cur_wch = &cur_line->content[cur_line->cur];
+            if (*cur_wch == L'\0' || *cur_wch == L' ') 
+                  cur_line->overflow = true;
       }
 
       // if (cur_wchar == L' '){

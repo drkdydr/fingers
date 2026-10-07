@@ -63,6 +63,7 @@ Line* new_line(){
       Line *line = &lines[lines_count++];
       line->cur = 0;
       line->cur_word = 0;
+      line->overflow = false;
 
       // insert words
       int written = 0;

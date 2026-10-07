@@ -109,7 +109,10 @@ void printInput(int inp_stat, int inp_wch){
 
       // print both input line and test line
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
-            mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx - 1, "%lc", *(cur_wch - 1)); // clear true/false info
+            if (!(cur_wch - 1) || *(cur_wch - 1) == L'\0')
+                  mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx - 1, L" ", 1);
+            else 
+                  mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx - 1, "%lc", *(cur_wch - 1)); // clear true/false info
             mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + inp_line_idx - 1, " "); // clear from input line
             wmove(win, IND_Y, IND_X + 1 + IND_OFFSET + MAX(inp_line_idx - 1, 0)); 
 
@@ -117,12 +120,15 @@ void printInput(int inp_stat, int inp_wch){
             // eğer kelimede harf kaldıysa yanlış olarak yaz
             wattron(win, COLOR_PAIR(WRONG));
             while (cur_line->content[cur_idx] != L' ' && cur_line->content[cur_idx] != L'\0') 
-                  mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx, &cur_line->content[cur_idx++], 1);
+                    mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx, &cur_line->content[cur_idx++], 1);
             wattroff(win, COLOR_PAIR(WRONG));
 
-            if (cur_idx != WRITE_LINE_W){ // if line is not ended
+            int next_word_idx = cur_line->cur_word;
+            while (cur_line->content[next_word_idx] != L' ' && cur_line->content[next_word_idx] != L'\0') next_word_idx++;
+            next_word_idx++; // skip space
+            if (next_word_idx < WRITE_LINE_W){ // if line is not ended
                   // reprint rest of line (if overflow this prevents overwrite later words)
-                  mvwaddwstr(win, LINE_START_Y, LINE_START_X + cur_idx, cur_line->content + cur_idx);
+                  mvwprintw(win, LINE_START_Y, LINE_START_X + next_word_idx, "%-*ls", WRITE_LINE_W - next_word_idx, cur_line->content + next_word_idx);
             }
 
             // clear whole input line
@@ -135,7 +141,7 @@ void printInput(int inp_stat, int inp_wch){
 
       }else if (inp_stat != KEY_CODE_YES){ // normal input
             // print input to input line
-            int pair = inp_wch == *cur_wch ? COLOR_PAIR(CORRECT) : COLOR_PAIR(WRONG);
+            int pair = inp_wch != *cur_wch ? COLOR_PAIR(WRONG) : cur_line->overflow ? COLOR_PAIR(WRONG) : COLOR_PAIR(CORRECT);
 
             wattron(win, pair);
             mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx, "%lc", inp_wch); 

@@ -12,7 +12,8 @@ extern const char *name; // fingers
                          
 // TODO
 // fingers'taki gereksiz constant'ları temizle
-// fix overflow
+// fix overflow (sanırım hallettim)
+// bazen (sadece overflow durumunda değil) line düzgün temizlenmiyor.
 
 int main(int argc, char **argv){
       setlocale(LC_ALL, "");
