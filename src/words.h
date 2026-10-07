@@ -6,6 +6,7 @@
 
 #define INPUT_BUF_SIZE 60
 #define WRITE_LINE_W 45
+#define INPUT_LEN_LIM 20
 
 typedef struct {
       wchar_t content[WRITE_LINE_W + 1]; // for \0

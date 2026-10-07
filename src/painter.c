@@ -24,7 +24,7 @@ extern const char *name;
 #define SEPLINE_X 4
 
 // time variables
-extern const int test_time; // will be read from config file later
+// extern const int test_time; // will be read from config file later
 extern int currSec; // which second we are in
 #define TIMER_Y 1
 #define TIMER_X 45
@@ -98,7 +98,7 @@ void printBorder(){
 
 // change time in every second
 void printTimer(int cur_sec){
-      mvwprintw(win, TIMER_Y, TIMER_X, "%02d:%02d", (test_time - cur_sec) / 60, (test_time - cur_sec) % 60);
+      mvwprintw(win, TIMER_Y, TIMER_X, "%02d:%02d", (duration - cur_sec) / 60, (duration - cur_sec) % 60);
 }
 
 // just print input dont handle anything more
@@ -109,10 +109,12 @@ void printInput(int inp_stat, int inp_wch){
 
       // print both input line and test line
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
-            if (!(cur_wch - 1) || *(cur_wch - 1) == L'\0')
-                  mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx - 1, L" ", 1);
-            else 
-                  mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx - 1, "%lc", *(cur_wch - 1)); // clear true/false info
+            if (cur_idx - 1 < WRITE_LINE_W){
+                  if (!(cur_wch - 1) || *(cur_wch - 1) == L'\0')
+                        mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx - 1, L" ", 1);
+                  else 
+                        mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx - 1, "%lc", *(cur_wch - 1)); // clear true/false info
+            }
             mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + inp_line_idx - 1, " "); // clear from input line
             wmove(win, IND_Y, IND_X + 1 + IND_OFFSET + MAX(inp_line_idx - 1, 0)); 
 
@@ -140,12 +142,16 @@ void printInput(int inp_stat, int inp_wch){
             wmove(win, IND_Y, IND_X + 1 + IND_OFFSET);
 
       }else if (inp_stat != KEY_CODE_YES){ // normal input
-            // print input to input line
-            int pair = inp_wch != *cur_wch ? COLOR_PAIR(WRONG) : cur_line->overflow ? COLOR_PAIR(WRONG) : COLOR_PAIR(CORRECT);
+            if (inp_line_idx >= INPUT_LEN_LIM) return;
 
-            wattron(win, pair);
-            mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx, "%lc", inp_wch); 
-            wattroff(win, pair);
+            if (cur_idx < WRITE_LINE_W){
+                  // print input to input line
+                  int pair = inp_wch != *cur_wch ? COLOR_PAIR(WRONG) : cur_line->overflow ? COLOR_PAIR(WRONG) : COLOR_PAIR(CORRECT);
+
+                  wattron(win, pair);
+                  mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx, "%lc", inp_wch); 
+                  wattroff(win, pair);
+            }
 
             // print input line
             mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + inp_line_idx, "%lc", inp_wch); 
@@ -155,7 +161,9 @@ void printInput(int inp_stat, int inp_wch){
 void printLines() {
       for(int l = 0; l < 2; l++){
             Line *line = &lines[curr_line_idx + l]; // next lines
-            mvwprintw(win,LINE_START_Y + (2 * l), LINE_START_X, "%-*ls ", WRITE_LINE_W, line->content); // this also clears prev line (- aligns left)
+            // mvwprintw(win,LINE_START_Y + (2 * l), LINE_START_X, "%-*ls ", WRITE_LINE_W + 1, line->content); // this also clears prev line (- aligns left) (garip şekilde bu düzgün çalışmıyor)
+            mvwprintw(win, LINE_START_Y + (2 * l), LINE_START_X, "%*s", WRITE_LINE_W + 1, "");  // clean line
+            mvwaddwstr(win, LINE_START_Y + (2 * l), LINE_START_X, line->content);                // print line
       }
 
 }
@@ -195,7 +203,7 @@ int *graph_wps;
 int graph_w = 40;
 
 // print result screen
-void printResult(int wpm, int max_wps, int accuracy){
+void printResult(int wpm, int max_wps, int accuracy, int duration){
       curs_set(0); // makes cursor invisible
       const char *header = "-- RESULTS --";
       mvwprintw(win, 1, (win_w - strlen(header)) / 2, "%s", header);
@@ -214,8 +222,8 @@ void printResult(int wpm, int max_wps, int accuracy){
 
       // bottom line (seconds indicator) 
       mvwaddch(win, 10, 8, '0');
-      mvwprintw(win, 10, 8 + graph_w / 2, "%2d", test_time / 2);
-      mvwprintw(win, 10, 8 + graph_w, "%2d", test_time);
+      mvwprintw(win, 10, 8 + graph_w / 2, "%2d", duration / 2);
+      mvwprintw(win, 10, 8 + graph_w, "%2d", duration);
       
       // write wpm
       mvwprintw(win, 2, 3, "WPM: %d", wpm);

@@ -12,10 +12,18 @@
 #define CORRECT 1
 #define WRONG 2
 
+typedef struct {
+      int wrongs;
+      int corrects;
+} second;
+
+extern int duration;
+extern second *seconds;
+
 void readWordFile(const char *filename);
 // starts program
 void start(int duration); // no parameter after config file added.
-      void init();
+      void init(int duration);
       void destroy();
 
       void test();
@@ -30,7 +38,7 @@ void start(int duration); // no parameter after config file added.
       void printInput(int inp_status, wchar_t inp_wch); 
       
 // print result screen
-void printResult(int wpm, int max_wps, int accuracy);
+void printResult(int wpm, int max_wps, int accuracy, int duration);
       // // prints speed graph (no need over simplification)
       // void printGraph();
 

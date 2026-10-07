@@ -13,13 +13,15 @@ extern const char *name; // fingers
 // TODO
 // fingers'taki gereksiz constant'ları temizle
 // fix overflow (sanırım hallettim)
+// write line kısmında 45 genişlikte yazabilelim en fazla fakat kalan kelimeleri aşağı (input line) yazalım
 // bazen (sadece overflow durumunda değil) line düzgün temizlenmiyor.
+// init_lines'ı düzenle (testi tekrar başlattığımızda baştan memory allocate etcem diye uğraşmasın)
 
 int main(int argc, char **argv){
       setlocale(LC_ALL, "");
       srand(time(0)); // for randomness
 
-      int time_limit = 60;
+      int time_limit = 10;
 
       // flags for configuration
       hoist(name, "tui typing test");

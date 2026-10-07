@@ -20,7 +20,7 @@ const int win_h = 12;
 
 int win_x, win_y; // absolute position of program window
 
-const int test_time = 60; // will be read from config file later
+// const int test_time = 60; // will be read from config file later
 extern int *graph_wps;
 extern int graph_w;
 // int wpm = 0;
@@ -31,7 +31,10 @@ extern int graph_w;
 
 // TEST PROPERTIES
 // seconds
-int currSec = 0; // which second we are in
+int duration;
+second *seconds;
+int currSec; // which second we are in
+clock_t start_clock;
 
 // int wpm = 0; 
 // int max_wps = 0; // for graph generation
@@ -119,6 +122,7 @@ void handle_input(int status, wint_t input){
 
       } else{ // normal input
             // do not store any input, just store true/false info (for wpm falan filan)
+            if (cur_line->cur >= cur_line->cur_word + INPUT_LEN_LIM) return;
             cur_line->cur++;
             wchar_t *cur_wch = &cur_line->content[cur_line->cur];
             if (*cur_wch == L'\0' || *cur_wch == L' ') 
@@ -144,6 +148,14 @@ void test(){
       // initialize lines
       init_lines();
 
+      // clear seconds
+      for (int s = 0; s < duration; s++){
+            second *cur = &seconds[s];
+            cur->corrects = 0;
+            cur->wrongs = 0;
+      }
+
+
       // TODO calculate accuracy (correct characters / total typed characters) * 100
       // wpm formula : (total characters typed / 5) / time (in minutes)
 
@@ -153,14 +165,26 @@ void test(){
       wint_t input;
       int status; // input status (KEY_CODE_YES / OK / ERR)
 
-      while (true){
-            printTypingScr(currSec);
-            while (true){
-                  status = wget_wch(win, &input);
-                  handle_input(status, input);
+      currSec = 0;
+      printTypingScr(currSec);
 
+      // TODO wait for user input
+      timeout(-1);
+      status = wget_wch(win, &input);
+      start_clock = clock();
+      handle_input(status, input);
+      timeout(25);
+      while (currSec < duration){
+            // if current second changed reprint timer
+            int newcurrSec = (clock() - start_clock) / CLOCKS_PER_SEC;
+            if (newcurrSec > currSec) {
+                  fprintf(stderr, "current second = %d", currSec);
+                  currSec = newcurrSec;
+                  printTimer(currSec);
             }
 
+            status = wget_wch(win, &input);
+            handle_input(status, input);
       }
 
       // // TODO save if its is a record
@@ -191,7 +215,7 @@ int result(){
             status = wget_wch(win, &input);
             if (status == KEY_CODE_YES && input == KEY_RESIZE) {
                   alignWin();
-                  printResult(wpm, max_wps, accuracy);
+                  printResult(wpm, max_wps, accuracy, duration);
             }
             if (status == OK && input == L'r') break;
             if (status == OK && input == 27) return 1; // exit program
@@ -207,7 +231,7 @@ void signalHandler(int sig){
       exit(sig);
 }
 
-void init(){
+void init(int _duration){
       signal(SIGINT, signalHandler);
       signal(SIGSEGV, signalHandler);
 
@@ -226,6 +250,14 @@ void init(){
 
       init_pair(CORRECT, COLOR_GREEN /*foreground*/, -1 /*background*/);
       init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
+
+      duration = _duration;
+      // init seconds array
+      seconds = malloc(duration * sizeof(second));
+      if (!seconds){
+            printf("error: memory allocation failed.\n");
+            exit(1);
+      }
 
       d = fopen("debug.log", "w");
       
@@ -256,7 +288,7 @@ void destroy(){
 }
 
 void start(int duration){
-      init();
+      init(duration);
 
       bool isTest = true;
       while (true) {
