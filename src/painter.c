@@ -65,6 +65,10 @@ const wchar_t blocks[] = {
 
 #define HIST_W 40
 
+void returnCursor(int idx){
+      wmove(win, IND_Y, IND_X + 1 + IND_OFFSET + idx); 
+}
+
 void alignWin(){
       extern int win_x, win_y;
 
@@ -107,6 +111,8 @@ void printInput(int inp_stat, int inp_wch){
       wchar_t *cur_wch = &cur_line->content[cur_idx];
       int inp_line_idx = cur_idx - cur_line->cur_word;
 
+      second* cur_sec = &seconds[currSec];
+
       // print both input line and test line
       if (inp_wch == KEY_BACKSPACE || inp_wch == 127 || inp_wch == L'\b') { 
             if (cur_idx - 1 < WRITE_LINE_W){
@@ -121,8 +127,10 @@ void printInput(int inp_stat, int inp_wch){
       } else if (inp_wch == L' ' || inp_wch == L'\n' || inp_wch == L'\r' || inp_wch == KEY_ENTER){ // enter and space ends input for current word
             // eğer kelimede harf kaldıysa yanlış olarak yaz
             wattron(win, COLOR_PAIR(WRONG));
-            while (cur_line->content[cur_idx] != L' ' && cur_line->content[cur_idx] != L'\0') 
+            while (cur_line->content[cur_idx] != L' ' && cur_line->content[cur_idx] != L'\0'){
                     mvwaddnwstr(win, LINE_START_Y, LINE_START_X + cur_idx, &cur_line->content[cur_idx++], 1);
+                    cur_sec->wrongs++;
+            }
             wattroff(win, COLOR_PAIR(WRONG));
 
             int next_word_idx = cur_line->cur_word;
@@ -144,10 +152,10 @@ void printInput(int inp_stat, int inp_wch){
       }else if (inp_stat != KEY_CODE_YES){ // normal input
             if (inp_line_idx >= INPUT_LEN_LIM) return;
 
-            if (cur_idx < WRITE_LINE_W){
-                  // print input to input line
-                  int pair = inp_wch != *cur_wch ? COLOR_PAIR(WRONG) : cur_line->overflow ? COLOR_PAIR(WRONG) : COLOR_PAIR(CORRECT);
+            // print input to input line
+            int pair = inp_wch != *cur_wch ? COLOR_PAIR(WRONG) : cur_line->overflow ? COLOR_PAIR(WRONG) : COLOR_PAIR(CORRECT);
 
+            if (cur_idx < WRITE_LINE_W){
                   wattron(win, pair);
                   mvwprintw(win, LINE_START_Y, LINE_START_X + cur_idx, "%lc", inp_wch); 
                   wattroff(win, pair);
@@ -155,6 +163,10 @@ void printInput(int inp_stat, int inp_wch){
 
             // print input line
             mvwprintw(win, IND_Y, IND_X + 1 + IND_OFFSET + inp_line_idx, "%lc", inp_wch); 
+
+            if (pair == COLOR_PAIR(CORRECT)){
+                  cur_sec->corrects++;
+            }else cur_sec->wrongs++;
       }
 }
 

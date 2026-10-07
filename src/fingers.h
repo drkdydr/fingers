@@ -26,8 +26,8 @@ void start(int duration); // no parameter after config file added.
       void init(int duration);
       void destroy();
 
-      void test();
-      int result(); // returns 1 if user wanted to exit
+      int test();
+            int result(); // returns 1 if user wanted to exit
 
       // draws typing screen
       void alignWin();
@@ -36,6 +36,8 @@ void start(int duration); // no parameter after config file added.
       void printTimer(int cur_sec);
       void printLines();
       void printInput(int inp_status, wchar_t inp_wch); 
+      // move cursor to end of input line
+      void returnCursor(int idx);
       
 // print result screen
 void printResult(int wpm, int max_wps, int accuracy, int duration);

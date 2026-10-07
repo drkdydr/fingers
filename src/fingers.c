@@ -34,7 +34,7 @@ extern int graph_w;
 int duration;
 second *seconds;
 int currSec; // which second we are in
-clock_t start_clock;
+struct timespec start_ts;
 
 // int wpm = 0; 
 // int max_wps = 0; // for graph generation
@@ -141,7 +141,7 @@ void handle_input(int status, wint_t input){
 }
 
 // typing test part
-void test(){
+int test(){
       wclear(win);
       printBorder();
                                     
@@ -168,24 +168,30 @@ void test(){
       currSec = 0;
       printTypingScr(currSec);
 
-      // TODO wait for user input
-      timeout(-1);
+      // wait for user input
+      wtimeout(win, -1); // indefinitely waits for user input
       status = wget_wch(win, &input);
-      start_clock = clock();
+      clock_gettime(CLOCK_MONOTONIC, &start_ts);
       handle_input(status, input);
-      timeout(25);
+      wtimeout(win, 0);
+      struct timespec now_ts;
       while (currSec < duration){
             // if current second changed reprint timer
-            int newcurrSec = (clock() - start_clock) / CLOCKS_PER_SEC;
+            clock_gettime(CLOCK_MONOTONIC, &now_ts);
+            int newcurrSec = now_ts.tv_sec - start_ts.tv_sec;
             if (newcurrSec > currSec) {
-                  fprintf(stderr, "current second = %d", currSec);
+                  // fprintf(stderr, "current second = %d", currSec);
                   currSec = newcurrSec;
                   printTimer(currSec);
+                  returnCursor(cur_line->cur - cur_line->cur_word);
             }
 
             status = wget_wch(win, &input);
-            handle_input(status, input);
+            if (status != ERR)
+                  handle_input(status, input);
       }
+
+      return result();
 
       // // TODO save if its is a record
       // if (wpm > record_wpm){
@@ -198,19 +204,45 @@ void test(){
 
 int result(){ 
       wclear(win);
+      wnoutrefresh(win);
       printBorder();
 
       wint_t input;
       int status;
 
-      // you can calculate wpm like variables in here
+      int wpm = 0, max_wps = 0, accuracy = 0;
+      // int keystrokes; // added very long time ago but cant remember why (deprecated)
+      double total_corrects, total_wrongs;
+      int cur_wpm;
+
+      // calculate wpm like variables in here
+      for (int s = 0; s < duration; s++){
+            second *cur_sec = &seconds[s];
+            int cur_correct = cur_sec->corrects;
+            int cur_wrong = cur_sec->wrongs;
+
+            cur_wpm = (cur_correct + cur_wrong) / 5;
+
+            // also add to graph wps array
+            int graph_idx = (int)(((double)s / (double)duration) * (double)graph_w);
+            int *cur_graph = &graph_wps[graph_idx];
+            *cur_graph += cur_wpm;
+            if (*cur_graph > max_wps) max_wps = *cur_graph;
+
+            total_corrects += cur_correct;
+            total_wrongs += cur_wrong;
+      }
+
+      wpm = (total_corrects + total_wrongs) / (double) duration * 60.0 / 5.0;
+      accuracy = total_corrects / (total_corrects + total_wrongs) * 100;
       
-      int wpm = 0, max_wps = 0, key_stroke = 0, accuracy = 0;
       
       // auto input (temporary)
-      fillRandom(graph_wps, graph_w, &wpm, &max_wps);
+      // fillRandom(graph_wps, graph_w, &wpm, &max_wps);
+      printResult(wpm, max_wps, accuracy, duration);
       // printWPS();
 
+      wtimeout(win, -1);
       while (true){
             status = wget_wch(win, &input);
             if (status == KEY_CODE_YES && input == KEY_RESIZE) {
@@ -220,6 +252,7 @@ int result(){
             if (status == OK && input == L'r') break;
             if (status == OK && input == 27) return 1; // exit program
       }
+
       return 0; // no need to exit program
 }
 
@@ -273,7 +306,7 @@ void init(int _duration){
       readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
 
       // initialize wps arrays
-      graph_wps = (int*)calloc(graph_w, sizeof(double));
+      graph_wps = (int*)calloc(graph_w, sizeof(int));
       if (!graph_w){
             wprintf(L"error: allocation failed.\n");
             exit(1);
@@ -290,14 +323,7 @@ void destroy(){
 void start(int duration){
       init(duration);
 
-      bool isTest = true;
-      while (true) {
-            if (isTest){
-                  test();
-            }else{ // result screen
-                  if (result()) break; // if result() returns 1 end program
-            }
-            isTest = !isTest;
+      while (!test()) {
       }
       
       destroy();
