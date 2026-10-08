@@ -2,3 +2,6 @@ old/
 .todo
 bin/
 debug.log
+debug_graph_wps.log
+output.txt
+records.txt
