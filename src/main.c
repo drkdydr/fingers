@@ -36,7 +36,6 @@ int main(int argc, char **argv){
             time_limit = atoi(time_lim_str);
 
       start(time_limit);
-      sleep(11115);
 
       endwin();
 }

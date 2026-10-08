@@ -76,6 +76,7 @@ void printWPS(){
       for(int i = 0; i < graph_w; i++){
             printf("%d, ", graph_wps[i]);
       }
+      exit(1);
 }
 
 // look input and change state of words and lines
@@ -187,7 +188,7 @@ int test(){
             }
 
             status = wget_wch(win, &input);
-            if (status != ERR)
+            if (status != ERR) // if no input provided wget_wch returns ERR
                   handle_input(status, input);
       }
 
@@ -202,6 +203,12 @@ int test(){
 
 }
 
+int find_graph_idx(int lower, int upper, int graph_width){
+      if (lower == upper) return graph_width / 2;
+
+      return 0;
+};
+
 int result(){ 
       wclear(win);
       wnoutrefresh(win);
@@ -215,23 +222,34 @@ int result(){
       double total_corrects, total_wrongs;
       int cur_wpm;
 
+      FILE *deb = fopen("debug_graph_wps.log", "w");
+
       // calculate wpm like variables in here
       for (int s = 0; s < duration; s++){
             second *cur_sec = &seconds[s];
             int cur_correct = cur_sec->corrects;
+            fprintf(deb, "cur_correct : %d\n", cur_correct);
             int cur_wrong = cur_sec->wrongs;
+            fprintf(deb, "cur_wrong : %d\n", cur_wrong);
 
-            cur_wpm = (cur_correct + cur_wrong) / 5;
+            cur_wpm = (cur_correct + cur_wrong) / 5.0
+                  * 60.0; // because it is one second data
+            fprintf(deb, "cur_wpm : %d\n", cur_wpm);
 
             // also add to graph wps array
-            int graph_idx = (int)(((double)s / (double)duration) * (double)graph_w);
+            int graph_idx = (int)ceil(((double)s / (double)(duration - 1)) * (double)(graph_w - 1)); // find a better way
+
+            fprintf(deb, "graph_idx : %d\n", graph_idx);
             int *cur_graph = &graph_wps[graph_idx];
+            fprintf(deb, "cur_graph value : %d\n", *cur_graph);
             *cur_graph += cur_wpm;
+            fprintf(deb, "cur_graph value (after): %d\n\n", *cur_graph);
             if (*cur_graph > max_wps) max_wps = *cur_graph;
 
             total_corrects += cur_correct;
             total_wrongs += cur_wrong;
       }
+      fclose(deb);
 
       wpm = (total_corrects + total_wrongs) / (double) duration * 60.0 / 5.0;
       accuracy = total_corrects / (total_corrects + total_wrongs) * 100;
@@ -291,6 +309,12 @@ void init(int _duration){
             printf("error: memory allocation failed.\n");
             exit(1);
       }
+
+      // did in test()
+      // for (int s = 0; s < duration; s++){
+      //       second *cur_s = &seconds[s];
+      //       cur_s->wrongs = cur_s->corrects = 0;
+      // }
 
       d = fopen("debug.log", "w");
       

@@ -153,7 +153,7 @@ void printInput(int inp_stat, int inp_wch){
             if (inp_line_idx >= INPUT_LEN_LIM) return;
 
             // print input to input line
-            int pair = inp_wch != *cur_wch ? COLOR_PAIR(WRONG) : cur_line->overflow ? COLOR_PAIR(WRONG) : COLOR_PAIR(CORRECT);
+            int pair = cur_line->overflow ? COLOR_PAIR(WRONG) : inp_wch == *cur_wch ? COLOR_PAIR(CORRECT) : COLOR_PAIR(WRONG);
 
             if (cur_idx < WRITE_LINE_W){
                   wattron(win, pair);
@@ -229,19 +229,19 @@ void printResult(int wpm, int max_wps, int accuracy, int duration){
           
       // write left side numbers
       for (int i = 0; i < 3; i++) {
-            mvwprintw(win, 5 + (2*i), 3, "%*d -", 3, (int)((9 - 4*i) * block_wps / 2));
+            mvwprintw(win, 5 + (2*i), 3, "%*d -", 3, (int)((9.0 - 4.0*i) * block_wps / 2.0));
       }
 
       // bottom line (seconds indicator) 
       mvwaddch(win, 10, 8, '0');
-      mvwprintw(win, 10, 8 + graph_w / 2, "%2d", duration / 2);
-      mvwprintw(win, 10, 8 + graph_w, "%2d", duration);
+      mvwprintw(win, 10, 8 + (graph_w - 1) / 2, "%2d", duration / 2);
+      mvwprintw(win, 10, 8 + graph_w - 1, "%2d", duration); // -1 for indexing
       
       // write wpm
       mvwprintw(win, 2, 3, "WPM: %d", wpm);
       mvwprintw(win, 3, 3, "Accuracy: %d%%", accuracy);
 
-      // write graph
+      // write graph (DEBUG)
       for(int i = 0; i < graph_w; i++){
             int curr = graph_wps[i];
             fprintf(d, "actual value = %d\n", curr);
