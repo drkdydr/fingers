@@ -12,10 +12,8 @@ extern const char *name; // fingers
                          
 // TODO
 // fingers'taki gereksiz constant'ları temizle
-// fix overflow (sanırım hallettim)
-// write line kısmında 45 genişlikte yazabilelim en fazla fakat kalan kelimeleri aşağı (input line) yazalım
-// bazen (sadece overflow durumunda değil) line düzgün temizlenmiyor.
 // init_lines'ı düzenle (testi tekrar başlattığımızda baştan memory allocate etcem diye uğraşmasın)
+// birkaç tekrardan sonra wpm cozutuyor
 
 int main(int argc, char **argv){
       setlocale(LC_ALL, "");

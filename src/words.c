@@ -5,11 +5,6 @@
 #include "words.h"
 #include "fingers.h"
 
-// words
-wchar_t **words;
-int words_count;
-int words_capacity;
-
 #define BUFFER_SIZE 100
 
 // const char *wordFileName = "en_US.csv";

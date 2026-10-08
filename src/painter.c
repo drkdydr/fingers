@@ -215,7 +215,7 @@ int *graph_wps;
 int graph_w = 40;
 
 // print result screen
-void printResult(int wpm, int max_wps, int accuracy, int duration){
+void printResult(int wpm, int max_wps, int accuracy, int duration, bool isRecord){
       curs_set(0); // makes cursor invisible
       const char *header = "-- RESULTS --";
       mvwprintw(win, 1, (win_w - strlen(header)) / 2, "%s", header);
@@ -239,29 +239,28 @@ void printResult(int wpm, int max_wps, int accuracy, int duration){
       
       // write wpm
       mvwprintw(win, 2, 3, "WPM: %d", wpm);
+
+      // record info if new record
+      if (isRecord) wprintw(win, " [NEW RECORD]");
+
       mvwprintw(win, 3, 3, "Accuracy: %d%%", accuracy);
 
       // write graph (DEBUG)
       for(int i = 0; i < graph_w; i++){
             int curr = graph_wps[i];
-            fprintf(d, "actual value = %d\n", curr);
             int blockVal = ( ( curr / block_wps ) * ( blocks_size - 1 ) ); // value in blocks
-            fprintf(d, "block equivalent %d ",blockVal);
             int l = 0;
             while (blockVal > 0){
                   if(blockVal >= blocks_size - 1){
-                        fprintf(d, "->> %d ",blocks_size -1);
                         mvwprintw(win, 9 - l, 9 + i, "%lc", blocks[blocks_size - 1]);
                         blockVal -= blocks_size - 1;
                   }else{
-                        fprintf(d, "->> %d ",blockVal);
                         mvwprintw(win, 9 - l, 9 + i, "%lc", blocks[blockVal]);
                         break;
                   }
                   l++;
                   wrefresh(win);
             }
-            fprintf(d, "\n");
       }
 
       // restart info

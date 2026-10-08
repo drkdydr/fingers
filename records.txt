@@ -1,0 +1,2 @@
+[] ~ DYDR ~ [ "wpm" : "48", "accuracy" : "92%", "test_time" : "10" ]
+[] ~ DYDR ~ [ "wpm" : "39", "accuracy" : "81%", "test_time" : "10" ]

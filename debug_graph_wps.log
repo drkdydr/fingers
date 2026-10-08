@@ -1,0 +1,70 @@
+cur_correct : 1
+cur_wrong : 0
+cur_wpm : 12
+graph_idx : 0
+cur_graph value : 12
+cur_graph value (after): 24
+
+cur_correct : 6
+cur_wrong : 0
+cur_wpm : 72
+graph_idx : 5
+cur_graph value : 60
+cur_graph value (after): 132
+
+cur_correct : 4
+cur_wrong : 0
+cur_wpm : 48
+graph_idx : 9
+cur_graph value : 60
+cur_graph value (after): 108
+
+cur_correct : 4
+cur_wrong : 0
+cur_wpm : 48
+graph_idx : 13
+cur_graph value : 72
+cur_graph value (after): 120
+
+cur_correct : 3
+cur_wrong : 0
+cur_wpm : 36
+graph_idx : 18
+cur_graph value : 12
+cur_graph value (after): 48
+
+cur_correct : 6
+cur_wrong : 0
+cur_wpm : 72
+graph_idx : 22
+cur_graph value : 60
+cur_graph value (after): 132
+
+cur_correct : 2
+cur_wrong : 1
+cur_wpm : 36
+graph_idx : 26
+cur_graph value : 84
+cur_graph value (after): 120
+
+cur_correct : 5
+cur_wrong : 0
+cur_wpm : 60
+graph_idx : 31
+cur_graph value : 60
+cur_graph value (after): 120
+
+cur_correct : 3
+cur_wrong : 0
+cur_wpm : 36
+graph_idx : 35
+cur_graph value : 60
+cur_graph value (after): 96
+
+cur_correct : 5
+cur_wrong : 0
+cur_wpm : 60
+graph_idx : 39
+cur_graph value : 24
+cur_graph value (after): 84
+

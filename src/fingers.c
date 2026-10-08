@@ -23,28 +23,16 @@ int win_x, win_y; // absolute position of program window
 // const int test_time = 60; // will be read from config file later
 extern int *graph_wps;
 extern int graph_w;
-// int wpm = 0;
-// int max_wps = 0; // for graph generation
-
-// extern Line *lines;
-// extern int curr_line_idx;
 
 // TEST PROPERTIES
-// seconds
 int duration;
+
 second *seconds;
 int currSec; // which second we are in
+             
 struct timespec start_ts;
 
-// int wpm = 0; 
-// int max_wps = 0; // for graph generation
-
-// int key_stroke = 0;
-// int accuracy = 0;
-
-
-FILE *d; // debug log file
-FILE *lb; // leaderboard
+int record = 0;
 
 // debug tool to fill wps values randomly
 void fillRandom(int *arr, int arr_size, int* wpm, int* max_wps){
@@ -149,6 +137,7 @@ int test(){
       // initialize lines
       init_lines();
 
+      // CREATE INITIAL DATA / CLEAR PREVIOUS TEST'S DATA
       // clear seconds
       for (int s = 0; s < duration; s++){
             second *cur = &seconds[s];
@@ -156,12 +145,12 @@ int test(){
             cur->wrongs = 0;
       }
 
+      // clear graph_wps array
+      for (int i = 0; i < graph_w; i++) graph_wps[i] = 0;
 
-      // TODO calculate accuracy (correct characters / total typed characters) * 100
-      // wpm formula : (total characters typed / 5) / time (in minutes)
-
-      // Line *cur_line = &lines[curr_line_idx];
-      // word_view *cur_word = &cur_line->words[cur_line->cur];
+      // recreate lines
+      
+      //
 
       wint_t input;
       int status; // input status (KEY_CODE_YES / OK / ERR)
@@ -193,21 +182,7 @@ int test(){
       }
 
       return result();
-
-      // // TODO save if its is a record
-      // if (wpm > record_wpm){
-      //          lb = fopen("leaderboard.txt", "a"); // [timestamp] : user : { "wpm" : "36", "key-stroke" : "178", "test_time" : "60" }
-      //          saveRecord();
-      //          fclose(lb); // close leaderboard file
-      // }
-
 }
-
-int find_graph_idx(int lower, int upper, int graph_width){
-      if (lower == upper) return graph_width / 2;
-
-      return 0;
-};
 
 int result(){ 
       wclear(win);
@@ -222,50 +197,45 @@ int result(){
       double total_corrects, total_wrongs;
       int cur_wpm;
 
-      FILE *deb = fopen("debug_graph_wps.log", "w");
-
       // calculate wpm like variables in here
       for (int s = 0; s < duration; s++){
             second *cur_sec = &seconds[s];
             int cur_correct = cur_sec->corrects;
-            fprintf(deb, "cur_correct : %d\n", cur_correct);
             int cur_wrong = cur_sec->wrongs;
-            fprintf(deb, "cur_wrong : %d\n", cur_wrong);
 
             cur_wpm = (cur_correct + cur_wrong) / 5.0
                   * 60.0; // because it is one second data
-            fprintf(deb, "cur_wpm : %d\n", cur_wpm);
 
             // also add to graph wps array
             int graph_idx = (int)ceil(((double)s / (double)(duration - 1)) * (double)(graph_w - 1)); // find a better way
 
-            fprintf(deb, "graph_idx : %d\n", graph_idx);
             int *cur_graph = &graph_wps[graph_idx];
-            fprintf(deb, "cur_graph value : %d\n", *cur_graph);
             *cur_graph += cur_wpm;
-            fprintf(deb, "cur_graph value (after): %d\n\n", *cur_graph);
             if (*cur_graph > max_wps) max_wps = *cur_graph;
 
             total_corrects += cur_correct;
             total_wrongs += cur_wrong;
       }
-      fclose(deb);
 
       wpm = (total_corrects + total_wrongs) / (double) duration * 60.0 / 5.0;
       accuracy = total_corrects / (total_corrects + total_wrongs) * 100;
+
+      bool isRecord = wpm > record;
+
+      // save if it is a record
+      if (isRecord){
+            record = wpm;
+            write_RecordFile(record, accuracy, duration);
+      }
       
-      
-      // auto input (temporary)
-      // fillRandom(graph_wps, graph_w, &wpm, &max_wps);
-      printResult(wpm, max_wps, accuracy, duration);
-      // printWPS();
+      printResult(wpm, max_wps, accuracy, duration, isRecord);
 
       wtimeout(win, -1);
       while (true){
             status = wget_wch(win, &input);
             if (status == KEY_CODE_YES && input == KEY_RESIZE) {
                   alignWin();
-                  printResult(wpm, max_wps, accuracy, duration);
+                  printResult(wpm, max_wps, accuracy, duration, isRecord);
             }
             if (status == OK && input == L'r') break;
             if (status == OK && input == 27) return 1; // exit program
@@ -303,24 +273,13 @@ void init(int _duration){
       init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
 
       duration = _duration;
-      // init seconds array
+
+      // allocate seconds array
       seconds = malloc(duration * sizeof(second));
       if (!seconds){
             printf("error: memory allocation failed.\n");
             exit(1);
       }
-
-      // did in test()
-      // for (int s = 0; s < duration; s++){
-      //       second *cur_s = &seconds[s];
-      //       cur_s->wrongs = cur_s->corrects = 0;
-      // }
-
-      d = fopen("debug.log", "w");
-      
-      // // get high score
-      // lb = fopen("leaderboard.txt", "r"); 
-      // int record_wpm = readRecordFile();
 
       // initializations:
       win_y = (LINES - win_h) / 2;
@@ -329,19 +288,24 @@ void init(int _duration){
       // read words from locale file
       readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
 
-      // initialize wps arrays
-      graph_wps = (int*)calloc(graph_w, sizeof(int));
+      // allocate wps arrays
+      graph_wps = (int*)malloc(graph_w * sizeof(int));
       if (!graph_w){
             wprintf(L"error: allocation failed.\n");
             exit(1);
       }
+
+      record = read_RecordFile();
 }
 
 void destroy(){
       
-      fclose(d); // close debug file
-      endwin();
+      free(seconds);
+      free(graph_wps);
+      free(lines);
+      free(words);
 
+      endwin();
 }
 
 void start(int duration){

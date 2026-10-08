@@ -20,6 +20,10 @@ typedef struct {
 extern int duration;
 extern second *seconds;
 
+extern wchar_t **words;
+extern int words_count;
+extern int words_capacity;
+
 void readWordFile(const char *filename);
 // starts program
 void start(int duration); // no parameter after config file added.
@@ -40,12 +44,16 @@ void start(int duration); // no parameter after config file added.
       void returnCursor(int idx);
       
 // print result screen
-void printResult(int wpm, int max_wps, int accuracy, int duration);
+void printResult(int wpm, int max_wps, int accuracy, int duration, bool isRecord);
       // // prints speed graph (no need over simplification)
       // void printGraph();
 
 // LATER:
 // reads settings from config (language, time etc.)
 void readConfig();
+// reads record file and returns record
+int read_RecordFile(); 
+// write record to end of file
+void write_RecordFile(int new_record, int accuracy, int test_time);
 
 #endif

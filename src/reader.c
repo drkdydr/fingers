@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <wchar.h>
+#include <ctype.h>
 #include "fingers.h"
 
-extern wchar_t **words;
-extern int words_count;
-extern int words_capacity;
+wchar_t **words;
+int words_count;
+int words_capacity;
 
 #define BUFFER_SIZE 100
 
@@ -62,6 +63,33 @@ void readWordFile(const char *filename){
       // wprintf(L"\n");
 
       return;
+}
+
+#define RECORD_FORMAT "[%s] ~ %s ~ [ \"wpm\" : \"%d\", \"accuracy\" : \"%d%%\", \"test_time\" : \"%d\" ]\n"
+
+int read_RecordFile(){
+      return 0;
+
+}
+
+// [timestamp] ~ USER ~ [ "wpm" : "36", "accuracy" : "78%", "test_time" : "60" ]
+void write_RecordFile(int new_record, int accuracy, int test_time){
+
+      char *username = getenv("USER");
+      // upper username
+      char *un_cpy = username;
+      while (*un_cpy) {
+            *un_cpy = toupper(*un_cpy);
+            un_cpy++;
+      }
+
+      FILE *r_file = fopen("records.txt", "a");
+      if (!r_file){
+            fprintf(stderr, "warning: record cannot be opened.\n");
+            return;
+      }
+      fprintf(r_file, RECORD_FORMAT, /*timestamp*/ "" , username, new_record, accuracy, test_time);
+      fclose(r_file);
 }
 
 // meraklısına
