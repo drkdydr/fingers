@@ -11,8 +11,9 @@
 #include <unistd.h>
 #include <wchar.h>
 
+char bin_folder_buffer[PATH_BUFFERSIZE];
+
 const char *name = "fingers";
-#define WORD_FILE_PATH "/home/dydr/projects/fingers/words/tr.csv"
 
 WINDOW *win;
 const int win_w = 53;
@@ -252,7 +253,7 @@ void signalHandler(int sig){
       exit(sig);
 }
 
-void init(int _duration){
+void init(int *_duration, char *_language){
       signal(SIGINT, signalHandler);
       signal(SIGSEGV, signalHandler);
 
@@ -272,7 +273,7 @@ void init(int _duration){
       init_pair(CORRECT, COLOR_GREEN /*foreground*/, -1 /*background*/);
       init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
 
-      duration = _duration;
+      duration = *_duration;
 
       // allocate seconds array
       seconds = malloc(duration * sizeof(second));
@@ -285,8 +286,20 @@ void init(int _duration){
       win_y = (LINES - win_h) / 2;
       win_x = (COLS - win_w) / 2;
 
+      strcpy(bin_folder_buffer, getenv("HOME"));
+      strcat(bin_folder_buffer, "/bin/fingers/");
+
+      char words_path[200];
+      strcpy(words_path, bin_folder_buffer);
+      strcat(words_path, "words/");
+      strcat(words_path, _language);
+      strcat(words_path, ".csv");
+
       // read words from locale file
-      readWordFile(WORD_FILE_PATH); // fopen çalıştırdığın konuma göre path'i alır
+      readWordFile(words_path); // fopen çalıştırdığın konuma göre path'i alır
+
+      // read config file
+      readConfig(&duration, _language);
 
       // allocate wps arrays
       graph_wps = (int*)malloc(graph_w * sizeof(int));
@@ -308,8 +321,8 @@ void destroy(){
       endwin();
 }
 
-void start(int duration){
-      init(duration);
+void start(int *duration, char *language){
+      init(duration, language);
 
       while (!test()) {
       }

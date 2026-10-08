@@ -19,13 +19,15 @@ int main(int argc, char **argv){
       setlocale(LC_ALL, "");
       srand(time(0)); // for randomness
 
-      int time_limit = 10;
+      int time_limit = 10; // default time is 60 seconds
 
       // flags for configuration
       hoist(name, "tui typing test");
 
       char *time_lim_str;
       new_opt_arged("-d", "--duration", "DURATION", "custom test duration in seconds (default 60 seconds)", &time_lim_str);
+      char *language = "tr"; // turkish by default
+      new_opt_arged("-l", "--lang", "LANGUAGE", "select language", &language);
 
       parse_args(argc, argv);
       strike();
@@ -33,7 +35,8 @@ int main(int argc, char **argv){
       if (time_lim_str)
             time_limit = atoi(time_lim_str);
 
-      start(time_limit);
+      
+      start(&time_limit, language);
 
       endwin();
 }

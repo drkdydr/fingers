@@ -4,7 +4,7 @@
 #include <curses.h>
 #include <wchar.h>
 
-#define RESTART_KEY R
+#define PATH_BUFFERSIZE 200
 
 #define LINE_START_Y 3
 #define LINE_START_X 4
@@ -24,10 +24,12 @@ extern wchar_t **words;
 extern int words_count;
 extern int words_capacity;
 
+extern char bin_folder_buffer[PATH_BUFFERSIZE];
+
 void readWordFile(const char *filename);
 // starts program
-void start(int duration); // no parameter after config file added.
-      void init(int duration);
+void start(int *duration, char *language); // no parameter after config file added.
+      void init(int *duration, char *language);
       void destroy();
 
       int test();
@@ -50,7 +52,7 @@ void printResult(int wpm, int max_wps, int accuracy, int duration, bool isRecord
 
 // LATER:
 // reads settings from config (language, time etc.)
-void readConfig();
+void readConfig(int *duration, char *language);
 // reads record file and returns record
 int read_RecordFile(); 
 // write record to end of file

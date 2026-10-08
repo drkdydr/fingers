@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <wchar.h>
 #include <ctype.h>
+#include <string.h>
 #include "fingers.h"
 
 wchar_t **words;
 int words_count;
 int words_capacity;
 
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 200
 
-const char *wordFileName = "tr.csv";
+char leaderboard_path[PATH_BUFFERSIZE];
+FILE *lbf; // leaderboard file
 
 // add read word to memory
 void add_word(wchar_t *word){
@@ -65,31 +68,85 @@ void readWordFile(const char *filename){
       return;
 }
 
+void readConfig(int *duration, char *language){
+      char config_path[PATH_BUFFERSIZE];
+      FILE *cf; // config file
+
+      int *config_duration;
+      char *config_language;
+
+      strcpy(config_path, bin_folder_buffer);
+      strcat(config_path, "fingers.config");
+
+      cf = fopen(config_path, "r");
+
+      if (!duration && config_duration){
+            free(duration);
+            duration = config_duration;
+      }
+      if (!language && config_language){
+            free(language);
+            language = config_language;
+      }
+}
+
 #define RECORD_FORMAT "[%s] ~ %s ~ [ \"wpm\" : \"%d\", \"accuracy\" : \"%d%%\", \"test_time\" : \"%d\" ]\n"
+#define RECORD_SCAN_FORMAT \
+  "[%*[^]]] ~ %*[^~]~ [ \"wpm\" : \"%d\", \"accuracy\" : \"%*d%%\", \"test_time\" : \"%*d\" ]"
 
+// read function will be always started before write so I initialized leaderboard_path here
 int read_RecordFile(){
-      return 0;
+      int record = 0;
+      // read file will work
+      strcpy(leaderboard_path, bin_folder_buffer);
+      strcat(leaderboard_path, "leaderboard.txt"); // otomatik ~ ($HOME) algılama yok
 
+      lbf = fopen(leaderboard_path, "rb");
+      if (!lbf){
+            fprintf(stderr, "warning: record file cannot be opened.\n");
+            return record;
+      }
+
+      if (fseek(lbf, -1, SEEK_END) != 0) { /* file empty */ }
+
+      // skip last \n characters (cause there can be multiple)
+      while (fgetc(lbf) == '\n') {
+      if (fseek(lbf, -2, SEEK_CUR) != 0) break;
+      }
+
+      // find start of last line
+      do {
+      if (fseek(lbf, -2, SEEK_CUR) != 0) {   // start of file (fseek returns 0 if fails -> fails if nothing to seek)
+        rewind(lbf);
+        break;
+      }
+      } while (fgetc(lbf) != '\n');
+
+      fscanf(lbf, RECORD_SCAN_FORMAT, &record); // scanf okumazsa pointer değerine dokunmuyormuş
+
+      fclose(lbf);
+
+      return record;
 }
 
 // [timestamp] ~ USER ~ [ "wpm" : "36", "accuracy" : "78%", "test_time" : "60" ]
 void write_RecordFile(int new_record, int accuracy, int test_time){
 
       char *username = getenv("USER");
+
       // upper username
       char *un_cpy = username;
       while (*un_cpy) {
             *un_cpy = toupper(*un_cpy);
             un_cpy++;
       }
-
-      FILE *r_file = fopen("records.txt", "a");
-      if (!r_file){
+      lbf = fopen(leaderboard_path, "a");
+      if (!lbf){
             fprintf(stderr, "warning: record cannot be opened.\n");
             return;
       }
-      fprintf(r_file, RECORD_FORMAT, /*timestamp*/ "" , username, new_record, accuracy, test_time);
-      fclose(r_file);
+      fprintf(lbf, RECORD_FORMAT, /*timestamp*/ "" , username, new_record, accuracy, test_time);
+      fclose(lbf);
 }
 
 // meraklısına
