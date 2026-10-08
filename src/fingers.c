@@ -134,9 +134,6 @@ void handle_input(int status, wint_t input){
 int test(){
       wclear(win);
       printBorder();
-                                    
-      // initialize lines
-      init_lines();
 
       // CREATE INITIAL DATA / CLEAR PREVIOUS TEST'S DATA
       // clear seconds
@@ -150,6 +147,7 @@ int test(){
       for (int i = 0; i < graph_w; i++) graph_wps[i] = 0;
 
       // recreate lines
+      init_lines();
       
       //
 
@@ -282,6 +280,21 @@ void init(int *_duration, char *_language){
             exit(1);
       }
 
+      // allocate wps arrays
+      graph_wps = (int*)malloc(graph_w * sizeof(int));
+      if (!graph_w){
+            wprintf(L"error: allocation failed.\n");
+            exit(1);
+      }
+
+      // allocate lines
+      lines_cap = 3;
+      lines = malloc(lines_cap * sizeof(Line));
+      if (!lines){
+            wprintf(L"error: lines could not initialized.\n");
+            exit(1);
+      }
+
       // initializations:
       win_y = (LINES - win_h) / 2;
       win_x = (COLS - win_w) / 2;
@@ -300,13 +313,6 @@ void init(int *_duration, char *_language){
 
       // read config file
       readConfig(&duration, _language);
-
-      // allocate wps arrays
-      graph_wps = (int*)malloc(graph_w * sizeof(int));
-      if (!graph_w){
-            wprintf(L"error: allocation failed.\n");
-            exit(1);
-      }
 
       record = read_RecordFile();
 }

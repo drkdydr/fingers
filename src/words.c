@@ -26,13 +26,6 @@ Line *cur_line;
 
 // initialize first states of Line *lines;
 void init_lines(){
-      // initialize lines
-      lines_cap = 3;
-      lines = malloc(lines_cap * sizeof(Line));
-      if (!lines){
-            wprintf(L"error: lines could not initialized.\n");
-            exit(1);
-      }
       lines_count = 0;
       curr_line_idx = 0;
 

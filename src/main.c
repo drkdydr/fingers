@@ -13,7 +13,6 @@ extern const char *name; // fingers
 // TODO
 // fingers'taki gereksiz constant'ları temizle
 // init_lines'ı düzenle (testi tekrar başlattığımızda baştan memory allocate etcem diye uğraşmasın)
-// birkaç tekrardan sonra wpm cozutuyor
 
 int main(int argc, char **argv){
       setlocale(LC_ALL, "");

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 #include <unistd.h>
 #include <wchar.h>
 #include <ctype.h>
@@ -145,7 +146,14 @@ void write_RecordFile(int new_record, int accuracy, int test_time){
             fprintf(stderr, "warning: record cannot be opened.\n");
             return;
       }
-      fprintf(lbf, RECORD_FORMAT, /*timestamp*/ "" , username, new_record, accuracy, test_time);
+
+      time_t now = time(NULL);
+      char *time_str = ctime(&now);
+      char *t_str_cpy = time_str;
+      while (*t_str_cpy != '\n') t_str_cpy++;
+      *t_str_cpy = '\0';
+
+      fprintf(lbf, RECORD_FORMAT, time_str , username, new_record, accuracy, test_time);
       fclose(lbf);
 }
 
