@@ -59,36 +59,8 @@ void readWordFile(const char *filename){
       }
 
       fclose(fp);
-      
-      // // debug:
-      // for(int i = 0; i < words_count; i++){
-      //       wprintf(L"%ls, ", words[i]);
-      // }
-      // wprintf(L"\n");
 
       return;
-}
-
-void readConfig(int *duration, char *language){
-      char config_path[PATH_BUFFERSIZE];
-      FILE *cf; // config file
-
-      int *config_duration;
-      char *config_language;
-
-      strcpy(config_path, bin_folder_buffer);
-      strcat(config_path, "fingers.config");
-
-      cf = fopen(config_path, "r");
-
-      if (!duration && config_duration){
-            free(duration);
-            duration = config_duration;
-      }
-      if (!language && config_language){
-            free(language);
-            language = config_language;
-      }
 }
 
 #define RECORD_FORMAT "[%s] ~ %s ~ [ \"wpm\" : \"%d\", \"accuracy\" : \"%d%%\", \"test_time\" : \"%d\" ]\n"

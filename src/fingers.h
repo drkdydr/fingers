@@ -51,8 +51,6 @@ void printResult(int wpm, int max_wps, int accuracy, int duration, bool isRecord
       // void printGraph();
 
 // LATER:
-// reads settings from config (language, time etc.)
-void readConfig(int *duration, char *language);
 // reads record file and returns record
 int read_RecordFile(); 
 // write record to end of file

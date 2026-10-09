@@ -3,7 +3,6 @@
 #include <math.h>
 #include <signal.h>
 #include <time.h>
-#include <ctype.h>
 #include <curses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +14,7 @@ char bin_folder_buffer[PATH_BUFFERSIZE];
 
 const char *name = "fingers";
 
+SCREEN *scr;
 WINDOW *win;
 const int win_w = 53;
 const int win_h = 12;
@@ -26,7 +26,8 @@ extern int *graph_wps;
 extern int graph_w;
 
 // TEST PROPERTIES
-int duration;
+int duration = 0;
+char language[32] = "tr";
 
 second *seconds;
 int currSec; // which second we are in
@@ -34,29 +35,6 @@ int currSec; // which second we are in
 struct timespec start_ts;
 
 int record = 0;
-
-// debug tool to fill wps values randomly
-void fillRandom(int *arr, int arr_size, int* wpm, int* max_wps){
-      // FILE *f = fopen("debug.log", "a");
-      // fprintf(f, "graph_wps=%p, graph_w=%d\n", (void*)graph_wps, graph_w);
-      // fclose(f);
-
-      if (!arr) return;
-      // printf("filling random...\n");
-      int lower = 0, upper = 200;
-
-      double total = 0;
-
-      for (int i = 0; i < arr_size; i++){
-            int random_int = rand() % ( upper + 1 );
-            // printf("random-int : %d", random_int);
-            if (*max_wps < random_int) *max_wps = random_int;
-            arr[i] = random_int;
-            total += random_int;
-      }
-      // printf("filled random\n");
-      *wpm = ceil(total / (double)arr_size);
-}
 
 // test for debugging function
 void printWPS(){
@@ -159,10 +137,12 @@ int test(){
 
       // wait for user input
       wtimeout(win, -1); // indefinitely waits for user input
-      status = wget_wch(win, &input);
-      clock_gettime(CLOCK_MONOTONIC, &start_ts);
-      handle_input(status, input);
+      do {
+            status = wget_wch(win, &input);
+            handle_input(status, input);
+      }while (status == KEY_CODE_YES && input == KEY_RESIZE);
       wtimeout(win, 0);
+      clock_gettime(CLOCK_MONOTONIC, &start_ts);
       struct timespec now_ts;
       while (currSec < duration){
             // if current second changed reprint timer
@@ -193,8 +173,8 @@ int result(){
 
       int wpm = 0, max_wps = 0, accuracy = 0;
       // int keystrokes; // added very long time ago but cant remember why (deprecated)
-      double total_corrects, total_wrongs;
-      int cur_wpm;
+      double total_corrects = 0.0, total_wrongs = 0.0;
+      int cur_wpm = 0;
 
       // calculate wpm like variables in here
       for (int s = 0; s < duration; s++){
@@ -206,7 +186,9 @@ int result(){
                   * 60.0; // because it is one second data
 
             // also add to graph wps array
-            int graph_idx = (int)ceil(((double)s / (double)(duration - 1)) * (double)(graph_w - 1)); // find a better way
+            int graph_idx = 0;
+            if (duration > 1)
+                  graph_idx = (int)ceil(((double)s / (double)(duration - 1)) * (double)(graph_w - 1)); // find a better way
 
             int *cur_graph = &graph_wps[graph_idx];
             *cur_graph += cur_wpm;
@@ -216,8 +198,12 @@ int result(){
             total_wrongs += cur_wrong;
       }
 
-      wpm = (total_corrects + total_wrongs) / (double) duration * 60.0 / 5.0;
-      accuracy = total_corrects / (total_corrects + total_wrongs) * 100;
+      if (duration > 0) // if duration is not zero
+            wpm = (total_corrects + total_wrongs) / (double) duration * 60.0 / 5.0;
+
+      double keystroke = total_corrects + total_wrongs;
+      if (keystroke > 0)
+            accuracy = (total_corrects / keystroke) * 100;
 
       bool isRecord = wpm > record;
 
@@ -255,23 +241,26 @@ void init(int *_duration, char *_language){
       signal(SIGINT, signalHandler);
       signal(SIGSEGV, signalHandler);
 
-      // screen properties
-      set_escdelay(25);   // milisaniye cinsinden, initscr()'dan ÖNCE çağrılmalı
-      initscr();
-	cbreak();
-      noecho();
-	keypad(stdscr, TRUE);
+      // find binary folder path
+      int reslen /*result length*/ = snprintf(bin_folder_buffer, sizeof bin_folder_buffer, "%s/bin/fingers/", getenv("HOME")); 
+      if (reslen < 0 || (size_t)reslen >= sizeof bin_folder_buffer){
+            fprintf(stderr, "warning: binary folder path too long.\n");
+            exit(1);
+       }
 
-      if (has_colors()) {
-            start_color();
-            use_default_colors();
-      }
-      refresh();
+      if (*_duration) duration = *_duration;
+      if (_language[0] != '\0') strcpy(language, _language);
 
-      init_pair(CORRECT, COLOR_GREEN /*foreground*/, -1 /*background*/);
-      init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
+      char words_path[200];
+      strcpy(words_path, bin_folder_buffer);
+      strcat(words_path, "words/");
+      strcat(words_path, language);
+      strcat(words_path, ".csv");
 
-      duration = *_duration;
+      // read words from locale file
+      readWordFile(words_path); // fopen çalıştırdığın konuma göre path'i alır
+
+      record = read_RecordFile();
 
       // allocate seconds array
       seconds = malloc(duration * sizeof(second));
@@ -295,36 +284,40 @@ void init(int *_duration, char *_language){
             exit(1);
       }
 
+      // screen properties
+      set_escdelay(25);   // milisaniye cinsinden, initscr()'dan ÖNCE çağrılmalı
+
+      scr = newterm(NULL, stdout, stdin);   // initscr() yerine
+      if (!scr) { fprintf(stderr, "newterm failed\n"); exit(1); }
+      set_term(scr);   // newterm sonrası bu ekranı aktif yap (tek ekran varsa genelde zaten aktif ama garanti için)
+
+	cbreak();
+      noecho();
+	keypad(stdscr, TRUE);
+
+      if (has_colors()) {
+            start_color();
+            use_default_colors();
+      }
+      refresh();
+
+      init_pair(CORRECT, COLOR_GREEN /*foreground*/, -1 /*background*/);
+      init_pair(WRONG, COLOR_RED /*foreground*/, -1 /*background*/); 
+
       // initializations:
       win_y = (LINES - win_h) / 2;
       win_x = (COLS - win_w) / 2;
-
-      strcpy(bin_folder_buffer, getenv("HOME"));
-      strcat(bin_folder_buffer, "/bin/fingers/");
-
-      char words_path[200];
-      strcpy(words_path, bin_folder_buffer);
-      strcat(words_path, "words/");
-      strcat(words_path, _language);
-      strcat(words_path, ".csv");
-
-      // read words from locale file
-      readWordFile(words_path); // fopen çalıştırdığın konuma göre path'i alır
-
-      // read config file
-      readConfig(&duration, _language);
-
-      record = read_RecordFile();
 }
 
 void destroy(){
-      
       free(seconds);
       free(graph_wps);
       free(lines);
       free(words);
 
+      delwin(win);
       endwin();
+      delscreen(scr);
 }
 
 void start(int *duration, char *language){
