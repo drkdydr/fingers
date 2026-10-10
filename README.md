@@ -1,4 +1,6 @@
-![Preview](assets/preview.gif)
+<p align="center">
+  <img src="assets/preview.gif" alt="Preview" width="100%">
+</p>
 
 # fingers
 
