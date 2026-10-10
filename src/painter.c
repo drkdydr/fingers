@@ -90,8 +90,6 @@ void printBorder(){
          waddch(win, toupper((unsigned char) name[i]));}
 
       // draw box
-      extern int win_x, win_y;
-      win = newwin(win_h, win_w, win_y, win_x);
       box(win, 0, 0);
 
       wnoutrefresh(win);
@@ -135,10 +133,12 @@ void printInput(int inp_stat, int inp_wch){
 
             int next_word_idx = cur_line->cur_word;
             while (cur_line->content[next_word_idx] != L' ' && cur_line->content[next_word_idx] != L'\0') next_word_idx++;
-            next_word_idx++; // skip space
-            if (next_word_idx < WRITE_LINE_W){ // if line is not ended
+
+            if (cur_line->content[next_word_idx] == L' ') { // if next character space (line not ended yet)
                   // reprint rest of line (if overflow this prevents overwrite later words)
                   mvwprintw(win, LINE_START_Y, LINE_START_X + next_word_idx, "%-*ls", WRITE_LINE_W - next_word_idx, cur_line->content + next_word_idx);
+
+                  next_word_idx++; // skip space
             }
 
             // clear whole input line

@@ -14,6 +14,7 @@ typedef struct {
       int cur; // current char's index
       int cur_word; // current word's index
       bool overflow;
+      int length;
 } Line;
 
 extern Line *lines;

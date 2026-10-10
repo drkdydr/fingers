@@ -26,7 +26,7 @@ extern int *graph_wps;
 extern int graph_w;
 
 // TEST PROPERTIES
-int duration = 0;
+int duration = 60;
 char language[32] = "tr";
 
 second *seconds;
@@ -49,6 +49,10 @@ void printWPS(){
 // look input and change state of words and lines
 void handle_input(int status, wint_t input){
       wchar_t inp_wch = (wchar_t) input;
+
+      if (inp_wch == 27) return; // ignore escape presses
+
+      if (inp_wch == L'\t') inp_wch = L' '; // tab
 
       // handle input
       if (input == KEY_RESIZE){
@@ -88,7 +92,7 @@ void handle_input(int status, wint_t input){
                   cur_line->cur = cur_line->cur_word = cur_wchar - cur_line->content;
             }
 
-      } else{ // normal input
+      } else if (status != KEY_CODE_YES){ // normal input
             // do not store any input, just store true/false info (for wpm falan filan)
             if (cur_line->cur >= cur_line->cur_word + INPUT_LEN_LIM) return;
             cur_line->cur++;
@@ -126,7 +130,6 @@ int test(){
 
       // recreate lines
       init_lines();
-      
       //
 
       wint_t input;
@@ -139,8 +142,10 @@ int test(){
       wtimeout(win, -1); // indefinitely waits for user input
       do {
             status = wget_wch(win, &input);
+            if (input == 27) return 1; // while (!test())
             handle_input(status, input);
-      }while (status == KEY_CODE_YES && input == KEY_RESIZE);
+      }while ((status == KEY_CODE_YES && input == KEY_RESIZE));
+                  // || (status == OK && input == );
       wtimeout(win, 0);
       clock_gettime(CLOCK_MONOTONIC, &start_ts);
       struct timespec now_ts;
@@ -149,15 +154,16 @@ int test(){
             clock_gettime(CLOCK_MONOTONIC, &now_ts);
             int newcurrSec = now_ts.tv_sec - start_ts.tv_sec;
             if (newcurrSec > currSec) {
-                  // fprintf(stderr, "current second = %d", currSec);
                   currSec = newcurrSec;
                   printTimer(currSec);
                   returnCursor(cur_line->cur - cur_line->cur_word);
             }
 
             status = wget_wch(win, &input);
-            if (status != ERR) // if no input provided wget_wch returns ERR
+            if (status != ERR) { // if no input provided wget_wch returns ERR
+                  // if (status == OK && input == 27) break; // finish test on esc
                   handle_input(status, input);
+            }
       }
 
       return result();
@@ -287,13 +293,14 @@ void init(int *_duration, char *_language){
       // screen properties
       set_escdelay(25);   // milisaniye cinsinden, initscr()'dan ÖNCE çağrılmalı
 
+      // initscr()
       scr = newterm(NULL, stdout, stdin);   // initscr() yerine
-      if (!scr) { fprintf(stderr, "newterm failed\n"); exit(1); }
+      if (!scr) { fprintf(stderr, "error: newterm failed\n"); exit(1); }
       set_term(scr);   // newterm sonrası bu ekranı aktif yap (tek ekran varsa genelde zaten aktif ama garanti için)
 
 	cbreak();
       noecho();
-	keypad(stdscr, TRUE);
+	keypad(stdscr, TRUE); // FALSE(default) olunca sol arrow key'i ([^A) [ - ^ - A olarak ayırıyor
 
       if (has_colors()) {
             start_color();
@@ -307,12 +314,17 @@ void init(int *_duration, char *_language){
       // initializations:
       win_y = (LINES - win_h) / 2;
       win_x = (COLS - win_w) / 2;
+
+      win = newwin(win_h, win_w, win_y, win_x);
+      keypad(win, TRUE);
 }
 
 void destroy(){
       free(seconds);
       free(graph_wps);
       free(lines);
+
+      for (int i = 0; i < words_count; i++) free(words[i]);
       free(words);
 
       delwin(win);

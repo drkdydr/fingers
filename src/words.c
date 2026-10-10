@@ -68,6 +68,8 @@ Line* new_line(){
             line->content[written++] = L' '; // seperate words with space
       }
 
+      line->length = written - 1;
+
       // null terminator
       line->content[written - 1] = L'\0'; // -1 koymasam "s" + " " + "\0"
 
