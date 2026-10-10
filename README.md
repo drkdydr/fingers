@@ -1,4 +1,4 @@
-[![Preview](assets/preview.gif)]
+![Preview](assets/preview.gif)
 
 # fingers
 
@@ -9,7 +9,7 @@ I hope you guys like as much as I do!
 
 Warning: This application works only linux (like all my other projects, maybe does not work for linux too :) )
 Warning2: This application also depends on library "hoist" if you want to compile first you must install that library.
-<a href="github.com/drkdydr/hoist"> You can find here <\a>
+<a href="https://github.com/drkdydr/hoist"> You can find here <\a>
 
 Kız: Makefile yazmayı bilen erkekler bal olsaymış.
 Biz:
